@@ -1,3 +1,3 @@
-
-spawn-pos:
-  
+prepare-time: 60
+game-time: 300
+spawn-pos: {}
