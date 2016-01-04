@@ -1,0 +1,27 @@
+name: MineCombat
+version: "1.0.0-SNAPSHOT"
+author: onebone
+api: ["1.0.0"]
+main: me.onebone.minecombat.MineCombat
+
+permissions:
+  minecombat.*:
+    description: All permissions for MineCombat
+    children:
+      minecombat.command.*:
+        description: Allows player to use all commands of MineCombat
+        children:
+          minecombat.command.spawnpos:
+            description: Allows player to use /spawnpos command
+          minecombat.command.momap:
+            description: Allows player to use /momap command
+
+commands:
+  spawnpos:
+    description: Command for management of spawn position
+    usage: /spawnpos <blue|red|list>
+    permission: minecombat.command.spawnpos
+  momap:
+    usage: /momap <name>
+    description: Command for management of map selection for next match
+    permission: minecombat.command.momap
