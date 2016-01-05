@@ -27,6 +27,7 @@ import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.DustParticle;
 import cn.nukkit.math.Vector3;
+import cn.nukkit.network.protocol.ExplodePacket;
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.ShootThread;
 
@@ -141,6 +142,17 @@ abstract public class BaseGun {
 			double _x = owner.getX();
 			double _y = owner.getY() + owner.getEyeHeight();
 			double _z = owner.getZ();
+			
+			ExplodePacket pk = new ExplodePacket();
+			pk.x = (float) _x;
+			pk.y = (float) _y;
+			pk.z = (float) _z;
+			pk.radius = 0.1F;
+			pk.records = new Vector3[]{};
+			Map<Long, Player> players = level.getPlayers();
+			for(Long key : players.keySet()){
+				players.get(key).dataPacket(pk);
+			}
 			
 			double xcos = Math.cos((owner.getYaw() - 90) / 180 * Math.PI);
 			double zcos = Math.sin((owner.getYaw() - 90) / 180 * Math.PI);
