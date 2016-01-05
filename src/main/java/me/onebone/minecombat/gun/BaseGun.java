@@ -146,9 +146,7 @@ abstract public class BaseGun {
 					if(player == owner) continue;
 					
 					if(this.canHit(vec, player)){
-						System.out.println("SHOT");
 						if(this.isHeadshot(vec, player)){
-							System.out.println("HEADSHOT");
 							player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_HEADSHOT, this.getHeadshotDamage(owner.distance(player))));
 						}else{
 							player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
