@@ -144,9 +144,8 @@ abstract public class BaseGun {
 					Player player = online.get(username);
 					
 					if(player == owner) continue;
-					double distance = vec.distance(player);
 					
-					if(distance < 1){
+					if(this.canHit(vec, player)){
 						player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
 						return true;
 					}
@@ -154,6 +153,10 @@ abstract public class BaseGun {
 			}
 		}
 		return true;
+	}
+	
+	public boolean canHit(Vector3 vec, Player player){
+		return vec.distance(player) < 1;
 	}
 	
 	abstract public boolean canShoot(long fromLastShoot);

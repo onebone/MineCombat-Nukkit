@@ -65,7 +65,7 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	private Map<String, PlayerContainer> containers = null;
 	private Map<String, Map<String, Object[]>> position = null;
-	private Map<Integer, String[]> kills = null;
+	private Map<String[], Integer> kills = null;
 	
 	private int status = STATUS_STOPPED;
 	
@@ -149,9 +149,9 @@ public class MineCombat extends PluginBase implements Listener{
 			if(player.getLastDamageCause() instanceof EntityDamageByEntityEvent && player.getLastDamageCause().getCause() == 15){
 				Entity damager = ((EntityDamageByEntityEvent)player.getLastDamageCause()).getDamager();
 				if(damager instanceof Player){
-					kills.put(this.getServer().getTick(), new String[]{
+					kills.put(new String[]{
 						((Player)damager).getName(), player.getName()
-					});
+					}, this.getServer().getTick());
 				}
 			}
 		}
@@ -251,12 +251,12 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	public void stopGame(){
-		this.status = STATUS_ONGOING;
+		this.status = STATUS_STOPPED;
 		
 		containers.clear();
 		
 		this.getServer().broadcastMessage(TextFormat.YELLOW + "Game is finished.");
-		this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 200);
+		this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 20);
 	}
 	
 	public int countPlayers(int team){
@@ -271,12 +271,10 @@ public class MineCombat extends PluginBase implements Listener{
 		return 0;
 	}
 	
-	public void onTick(){
-		int now = this.getServer().getTick();
-		for(Integer tick : kills.keySet()){
-			if(now - 50 > tick){
-				kills.remove(tick);
-				continue;
+	public void onTick(int now){
+		for(String[] key : kills.keySet()){
+			if(now - 50 > kills.get(key)){
+				kills.remove(key);
 			}
 		}
 		
@@ -292,8 +290,7 @@ public class MineCombat extends PluginBase implements Listener{
 				if(containers.containsKey(player.getName())){
 					if(kills.size() > 0){
 					StringBuilder killMessage = new StringBuilder();
-						for(Integer tick : kills.keySet()){
-							String[] players = kills.get(tick);
+						for(String[] players : kills.keySet()){
 							killMessage.append(
 								(isColleague(players[0], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[0] + TextFormat.WHITE
 								+ " -> "

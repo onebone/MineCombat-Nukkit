@@ -29,6 +29,6 @@ public class TickTask extends PluginTask<MineCombat>{
 	}
 	
 	public void onRun(int currentTick){
-		this.getOwner().onTick();
+		this.getOwner().onTick(currentTick);
 	}
 }
