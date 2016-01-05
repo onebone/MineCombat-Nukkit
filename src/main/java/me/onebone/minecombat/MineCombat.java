@@ -42,6 +42,7 @@ import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerDropItemEvent;
+import cn.nukkit.event.player.PlayerFoodLevelChangeEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
@@ -166,6 +167,8 @@ public class MineCombat extends PluginBase implements Listener{
 				PlayerContainer container = containers.get(player.getName());
 				container.getGun().reset();
 				container.quit();
+			}else{
+				player.setHealth(20);
 			}
 		}
 	}
@@ -210,6 +213,21 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 		event.getItem().kill();
 		event.setCancelled();
+	}
+	
+	@EventHandler
+	public void onFoodLevelChange(PlayerFoodLevelChangeEvent event){
+		event.setFoodLevel(20);
+		event.setFoodSaturationLevel(20);
+	}
+	
+	@EventHandler
+	public void onDamage(EntityDamageEvent event){
+		if(this.status == STATUS_STOPPED){
+			if(event.getEntity() instanceof Player){
+				event.setCancelled();
+			}
+		}
 	}
 	
 	public boolean onCommand(final CommandSender sender, Command command, String label, String[] args){
@@ -312,6 +330,8 @@ public class MineCombat extends PluginBase implements Listener{
 				player.teleport(spawn[TEAM_BLUE]);
 				blue++;
 			}
+			
+			player.setHealth(20);
 			containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
 		}
 		this.getServer().broadcastMessage(TextFormat.GREEN + "Game is started. Enjoy!");
