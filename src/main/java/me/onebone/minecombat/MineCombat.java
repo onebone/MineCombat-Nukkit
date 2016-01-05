@@ -44,7 +44,6 @@ import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerDropItemEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
-import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.inventory.InventoryHolder;
@@ -101,26 +100,6 @@ public class MineCombat extends PluginBase implements Listener{
 			this.getServer().getScheduler().scheduleDelayedRepeatingTask(new TickTask(this), 10, 10);
 			this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 20);
 		}
-	}
-
-	@EventHandler
-	public void onJoin(PlayerJoinEvent event){
-		Player player = event.getPlayer();
-		
-		if(this.status == STATUS_ONGOING){
-			if(!containers.containsKey(player.getName())){
-				int team = this.countPlayers(TEAM_BLUE) < this.countPlayers(TEAM_RED) ? TEAM_BLUE : TEAM_RED; 
-				containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
-			}
-			
-			player.teleport(spawn[this.getTeam(player.getName())]);
-			
-			containers.get(player.getName()).setActive();
-			containers.get(player.getName()).getGun().setOwner(player);
-		}
-		
-		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
-		player.getInventory().setHotbarSlotIndex(0, 3);
 	}
 	
 	@EventHandler
@@ -194,16 +173,19 @@ public class MineCombat extends PluginBase implements Listener{
 	@EventHandler
 	public void onRespawn(PlayerRespawnEvent event){
 		Player player = event.getPlayer();
-
 		if(this.status == STATUS_ONGOING){
-			int team;
-			if((team = this.getTeam(player.getName())) != -1){
-				player.teleport(spawn[team]);
+			if(!containers.containsKey(player.getName())){
+				int team = this.countPlayers(TEAM_BLUE) < this.countPlayers(TEAM_RED) ? TEAM_BLUE : TEAM_RED; 
+				containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
 			}
+			event.setRespawnPosition(spawn[this.getTeam(player.getName())]);
 			
 			if(containers.containsKey(player.getName())){
 				containers.get(player.getName()).setActive();
 			}
+			
+			containers.get(player.getName()).setActive();
+			containers.get(player.getName()).getGun().setOwner(player);
 		}
 		
 		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
