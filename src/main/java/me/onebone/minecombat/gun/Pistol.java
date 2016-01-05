@@ -44,6 +44,11 @@ public class Pistol extends BaseGun{
 	public int getMaxAmmo() {
 		return 8;
 	}
+	
+	@Override
+	public int getDefaultMagazine(){
+		return 50;
+	}
 
 	@Override
 	public int getDamage(double distance){

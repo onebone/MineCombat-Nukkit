@@ -38,6 +38,7 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.TextContainer;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
+import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerDropItemEvent;
@@ -45,6 +46,7 @@ import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
+import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
 import cn.nukkit.plugin.PluginBase;
@@ -63,12 +65,17 @@ public class MineCombat extends PluginBase implements Listener{
 	public static final int GUN_ITEM_ID = 104;
 	
 	public static final String STATUS_FORMAT = 
-			"%team %gun - %status\n"
+			"%red / %blue\n"
+			+ "%team %gun - %status\n"
 			+ "Ammo: %ammo/%magazine";
+	public static final String PREPARE_FORMAT = 
+			"Last match : %red / %blue\n"
+			+ TextFormat.GREEN + "Now preparing for the next game.";
 	
 	private Map<String, PlayerContainer> containers = null;
 	private Map<String, Map<String, Object[]>> position = null;
-	private Map<String[], Integer> kills = null;
+	private Map<String[], Integer[]> kills = null;
+	private int[] scores = new int[2];
 	
 	private int status = STATUS_STOPPED;
 	
@@ -102,9 +109,6 @@ public class MineCombat extends PluginBase implements Listener{
 			containers.get(player.getName()).setActive();
 			containers.get(player.getName()).getGun().setOwner(player);
 		}
-		
-		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
-		player.getInventory().setHotbarSlotIndex(0, 3);
 	}
 	
 	@EventHandler
@@ -150,15 +154,43 @@ public class MineCombat extends PluginBase implements Listener{
 		event.setDeathMessage(new TextContainer(""));
 		if(event.getEntity() instanceof Player){
 			Player player = (Player)event.getEntity();
-			if(player.getLastDamageCause() instanceof EntityDamageByEntityEvent && player.getLastDamageCause().getCause() == 15){
+			EntityDamageEvent cause = player.getLastDamageCause();
+			if(cause instanceof EntityDamageByEntityEvent && (cause.getCause() == CAUSE_GUN || cause.getCause() == CAUSE_HEADSHOT)){
 				Entity damager = ((EntityDamageByEntityEvent)player.getLastDamageCause()).getDamager();
 				if(damager instanceof Player){
+					Player causePlayer = (Player)damager;
 					kills.put(new String[]{
-						((Player)damager).getName(), player.getName()
-					}, this.getServer().getTick());
+						causePlayer.getName(), player.getName()
+					}, new Integer[]{this.getServer().getTick(), cause.getCause()});
+					
+					if(getTeam(causePlayer.getName()) == TEAM_RED){
+						scores[TEAM_RED]++;
+					}else{
+						scores[TEAM_BLUE]++;
+					}
 				}
 			}
+			
+			if(containers.containsKey(player.getName())){
+				PlayerContainer container = containers.get(player.getName());
+				container.getGun().reset();
+				container.quit();
+			}
 		}
+	}
+	
+	@EventHandler
+	public void onRespawn(PlayerRespawnEvent event){
+		Player player = event.getPlayer();
+
+		if(this.status == STATUS_ONGOING){
+			if(containers.containsKey(player.getName())){
+				containers.get(player.getName()).setActive();
+			}
+		}
+		
+		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
+		player.getInventory().setHotbarSlotIndex(0, 3);
 	}
 	
 	@EventHandler
@@ -237,6 +269,7 @@ public class MineCombat extends PluginBase implements Listener{
 	public void startGame(){
 		this.status = STATUS_ONGOING;
 		
+		scores = new int[2];
 		containers.clear();
 		Map<String, Player> online = this.getServer().getOnlinePlayers();
 
@@ -259,9 +292,25 @@ public class MineCombat extends PluginBase implements Listener{
 	public void stopGame(){
 		this.status = STATUS_STOPPED;
 		
+		this.getServer().broadcastMessage(TextFormat.YELLOW + "Game is finished.");
+		
+		Map<String, Player> online = this.getServer().getOnlinePlayers();
+		for(String username : online.keySet()){
+			Player player = online.get(username);
+			if(this.getTeam(player.getName()) == TEAM_RED && scores[TEAM_RED] > scores[TEAM_BLUE] || this.getTeam(player.getName()) == TEAM_BLUE && scores[TEAM_BLUE] > scores[TEAM_RED]){
+				player.sendMessage(TextFormat.GREEN + "Your team has won the game!");
+			}else if(scores[TEAM_RED] == scores[TEAM_BLUE]){
+				player.sendMessage(TextFormat.YELLOW + "The game has tied!");
+			}else{
+				player.sendMessage(TextFormat.RED + "Your team has lost the game. :(");
+			}
+		}
+		
+		for(String username : containers.keySet()){
+			containers.get(username).quit();
+		}
 		containers.clear();
 		
-		this.getServer().broadcastMessage(TextFormat.YELLOW + "Game is finished.");
 		this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 20);
 	}
 	
@@ -279,7 +328,7 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	public void onTick(int now){
 		for(String[] key : kills.keySet()){
-			if(now - 50 > kills.get(key)){
+			if(now - 50 > kills.get(key)[0]){
 				kills.remove(key);
 			}
 		}
@@ -290,7 +339,10 @@ public class MineCombat extends PluginBase implements Listener{
 			
 			switch(this.status){
 			case STATUS_STOPPED:
-				player.sendPopup(TextFormat.GREEN + "Now preparing for the next game.");
+				player.sendPopup(PREPARE_FORMAT
+					.replace("%red", TextFormat.RED + scores[TEAM_RED] + TextFormat.WHITE)
+					.replace("%blue", TextFormat.BLUE + scores[TEAM_BLUE] + TextFormat.BLUE)
+				);
 				break;
 			case STATUS_ONGOING:
 				if(containers.containsKey(player.getName())){
@@ -299,7 +351,7 @@ public class MineCombat extends PluginBase implements Listener{
 						for(String[] players : kills.keySet()){
 							killMessage.append(
 								(isColleague(players[0], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[0] + TextFormat.WHITE
-								+ " -> "
+								+ (kills.get(players)[1] == CAUSE_GUN ? " -> " : " -HEAD>")
 								+ (isColleague(players[1], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[1] + TextFormat.WHITE + "\n"
 							);
 						}
@@ -310,6 +362,8 @@ public class MineCombat extends PluginBase implements Listener{
 					PlayerContainer container = containers.get(player.getName());
 					
 					player.sendPopup(STATUS_FORMAT.replace("%team", container.getTeam() == TEAM_RED ? TextFormat.RED + "RED" + TextFormat.WHITE : TextFormat.BLUE + "BLUE" + TextFormat.WHITE)
+						.replace("%red", TextFormat.RED + scores[TEAM_RED] + TextFormat.WHITE)
+						.replace("%blue", TextFormat.BLUE + scores[TEAM_BLUE] + TextFormat.WHITE)
 						.replace("%gun", container.getGun().getName())
 						.replace("%status", container.isShooting() ? TextFormat.RED + "FIRING" + TextFormat.WHITE : TextFormat.GREEN + "SAFETY" + TextFormat.WHITE)
 						.replace("%ammo", container.getGun().getAmmo() + "")
@@ -326,5 +380,12 @@ public class MineCombat extends PluginBase implements Listener{
 			return (containers.get(player1).getTeam() == containers.get(player2).getTeam()); 
 		}
 		return true;
+	}
+	
+	public int getTeam(String player){
+		if(containers.containsKey(player)){
+			return containers.get(player).getTeam();
+		}
+		return -1;
 	}
 }

@@ -56,7 +56,14 @@ abstract public class BaseGun {
 	}
 	
 	public void setOwner(Player owner){
+		this.owner = null;
+		
 		this.owner = owner;
+	}
+	
+	public void reset(){
+		this.loadedAmmo = 0;
+		this.magazine = this.getDefaultMagazine();
 	}
 	
 	public int reload(){
@@ -182,6 +189,7 @@ abstract public class BaseGun {
 	abstract public boolean canShoot(long fromLastShoot);
 	abstract public int getRange();
 	abstract public int getMaxAmmo();
+	abstract public int getDefaultMagazine();
 	abstract public int getDamage(double distance);
 	abstract public String getName();
 }
