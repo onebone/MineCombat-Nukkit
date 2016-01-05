@@ -128,7 +128,7 @@ abstract public class BaseGun {
 		if(owner != null){
 			Level level = owner.getLevel();
 			double _x = owner.getX();
-			double _y = owner.getY() + owner.getHeight();
+			double _y = owner.getY() + owner.getEyeHeight();
 			double _z = owner.getZ();
 			
 			double xcos = Math.cos((owner.getYaw() - 90) / 180 * Math.PI);
@@ -146,7 +146,13 @@ abstract public class BaseGun {
 					if(player == owner) continue;
 					
 					if(this.canHit(vec, player)){
-						player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.isHeadshot(vec, player) ? this.getHeadshotDamage(owner.distance(player)) : this.getDamage(owner.distance(player))));
+						System.out.println("SHOT");
+						if(this.isHeadshot(vec, player)){
+							System.out.println("HEADSHOT");
+							player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_HEADSHOT, this.getHeadshotDamage(owner.distance(player))));
+						}else{
+							player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
+						}
 						return true;
 					}
 				}
@@ -156,11 +162,15 @@ abstract public class BaseGun {
 	}
 	
 	public boolean canHit(Vector3 vec, Player player){
-		return vec.distance(player) < 1;
+		return (player.getX() - 1 < vec.getX() && vec.getX() < player.getX() + 1
+				&& player.getY() < vec.getY() && vec.getY() < player.getY() + player.getHeight()
+				&& player.getZ() - 1 < vec.getZ() && vec.getZ() < player.getZ() + 1);
 	}
 	
 	public boolean isHeadshot(Vector3 vec, Player player){
-		return false;
+		return (player.getX() - 1 < vec.getX() && vec.getX() < player.getX() + 1
+				&& player.getY() + player.getEyeHeight() < vec.getY() && vec.getY() < player.getY() + player.getHeight()
+				&& player.getZ() - 1 < vec.getZ() && vec.getZ() < player.getZ() + 1);
 	}
 	
 	public int getHeadshotDamage(double distance){

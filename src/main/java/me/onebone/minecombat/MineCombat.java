@@ -58,6 +58,7 @@ public class MineCombat extends PluginBase implements Listener{
 	public static final int TEAM_BLUE = 1;
 	
 	public static final int CAUSE_GUN = 15;
+	public static final int CAUSE_HEADSHOT = 16;
 	
 	public static final int GUN_ITEM_ID = 104;
 	
