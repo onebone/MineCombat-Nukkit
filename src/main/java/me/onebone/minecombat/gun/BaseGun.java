@@ -23,6 +23,7 @@ import java.util.Map;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.DustParticle;
 import cn.nukkit.math.Vector3;
@@ -146,7 +147,7 @@ abstract public class BaseGun {
 					double distance = vec.distance(player);
 					
 					if(distance < 1){
-						player.attack(this.getDamage(owner.distance(player)));
+						player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
 						return true;
 					}
 				}

@@ -27,12 +27,17 @@ import me.onebone.minecombat.gun.Pistol;
 import me.onebone.minecombat.task.StartGameTask;
 import me.onebone.minecombat.task.StopGameTask;
 import me.onebone.minecombat.task.TickTask;
+
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.TextContainer;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
+import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerDropItemEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
@@ -50,6 +55,8 @@ public class MineCombat extends PluginBase implements Listener{
 	public static final int TEAM_RED = 0;
 	public static final int TEAM_BLUE = 1;
 	
+	public static final int CAUSE_GUN = 15;
+	
 	public static final int GUN_ITEM_ID = 104;
 	
 	public static final String STATUS_FORMAT = 
@@ -58,6 +65,7 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	private Map<String, PlayerContainer> containers = null;
 	private Map<String, Map<String, Object[]>> position = null;
+	private Map<Integer, String[]> kills = null;
 	
 	private int status = STATUS_STOPPED;
 	
@@ -69,11 +77,12 @@ public class MineCombat extends PluginBase implements Listener{
 			this.getLogger().warning("No spawn position was given. Set spawns using /spawnpos");
 		}else{
 			containers = new HashMap<>();
+			kills = new HashMap<>();
 			
 			this.getServer().getPluginManager().registerEvents(this, this);
 			
 			this.getServer().getScheduler().scheduleDelayedRepeatingTask(new TickTask(this), 10, 10);
-			this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-game", 60) * 20);
+			this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 20);
 		}
 	}
 
@@ -83,8 +92,7 @@ public class MineCombat extends PluginBase implements Listener{
 		
 		if(this.status == STATUS_ONGOING){
 			if(!containers.containsKey(player.getName())){
-				int redTeam = this.countPlayers(TEAM_RED);
-				int team = containers.size() - redTeam < redTeam ? TEAM_BLUE : TEAM_RED; 
+				int team = this.countPlayers(TEAM_BLUE) < this.countPlayers(TEAM_RED) ? TEAM_BLUE : TEAM_RED; 
 				containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
 			}
 			
@@ -130,6 +138,22 @@ public class MineCombat extends PluginBase implements Listener{
 			PlayerContainer container = containers.get(player.getName());
 			
 			container.shoot();
+		}
+	}
+	
+	@EventHandler
+	public void onDeath(PlayerDeathEvent event){
+		event.setDeathMessage(new TextContainer(""));
+		if(event.getEntity() instanceof Player){
+			Player player = (Player)event.getEntity();
+			if(player.getLastDamageCause() instanceof EntityDamageByEntityEvent && player.getLastDamageCause().getCause() == 15){
+				Entity damager = ((EntityDamageByEntityEvent)player.getLastDamageCause()).getDamager();
+				if(damager instanceof Player){
+					kills.put(this.getServer().getTick(), new String[]{
+						((Player)damager).getName(), player.getName()
+					});
+				}
+			}
 		}
 	}
 	
@@ -217,11 +241,13 @@ public class MineCombat extends PluginBase implements Listener{
 			Player player = online.get(username);
 			
 			int team = red > blue ? TEAM_BLUE : TEAM_RED;
+			if(team == TEAM_RED) red++;
+			else blue++;
 			containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
 		}
 		this.getServer().broadcastMessage(TextFormat.GREEN + "Game is started. Enjoy!");
 		
-		this.getServer().getScheduler().scheduleDelayedTask(new StopGameTask(this), this.getConfig().get("game-game", 300) * 20);
+		this.getServer().getScheduler().scheduleDelayedTask(new StopGameTask(this), this.getConfig().get("game-time", 300) * 20);
 	}
 	
 	public void stopGame(){
@@ -230,7 +256,7 @@ public class MineCombat extends PluginBase implements Listener{
 		containers.clear();
 		
 		this.getServer().broadcastMessage(TextFormat.YELLOW + "Game is finished.");
-		this.getServer().getScheduler().scheduleDelayedRepeatingTask(new TickTask(this), 10, 10);
+		this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 200);
 	}
 	
 	public int countPlayers(int team){
@@ -238,7 +264,7 @@ public class MineCombat extends PluginBase implements Listener{
 			int ret = 0;
 			
 			for(String player : containers.keySet()){
-				if(containers.get(player).getTeam() == team) ++ret; 
+				if(containers.get(player).isActive() && containers.get(player).getTeam() == team) ++ret; 
 			}
 			return ret;
 		}
@@ -246,6 +272,14 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	public void onTick(){
+		int now = this.getServer().getTick();
+		for(Integer tick : kills.keySet()){
+			if(now - 50 > tick){
+				kills.remove(tick);
+				continue;
+			}
+		}
+		
 		Map<String, Player> online = this.getServer().getOnlinePlayers();
 		for(String username : online.keySet()){
 			Player player = online.get(username);
@@ -256,6 +290,20 @@ public class MineCombat extends PluginBase implements Listener{
 				break;
 			case STATUS_ONGOING:
 				if(containers.containsKey(player.getName())){
+					if(kills.size() > 0){
+					StringBuilder killMessage = new StringBuilder();
+						for(Integer tick : kills.keySet()){
+							String[] players = kills.get(tick);
+							killMessage.append(
+								(isColleague(players[0], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[0] + TextFormat.WHITE
+								+ " -> "
+								+ (isColleague(players[1], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[1] + TextFormat.WHITE + "\n"
+							);
+						}
+						killMessage.substring(0, killMessage.length() - 1);
+						player.sendTip(killMessage.toString());
+					}
+					
 					PlayerContainer container = containers.get(player.getName());
 					
 					player.sendPopup(STATUS_FORMAT.replace("%team", container.getTeam() == TEAM_RED ? TextFormat.RED + "RED" + TextFormat.WHITE : TextFormat.BLUE + "BLUE" + TextFormat.WHITE)
@@ -268,5 +316,12 @@ public class MineCombat extends PluginBase implements Listener{
 				break;
 			}
 		}
+	}
+	
+	public boolean isColleague(String player1, String player2){
+		if(containers.containsKey(player1) && containers.containsKey(player2)){
+			return (containers.get(player1).getTeam() == containers.get(player2).getTeam()); 
+		}
+		return true;
 	}
 }
