@@ -18,8 +18,11 @@ package me.onebone.minecombat;
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import me.onebone.minecombat.data.PlayerContainer;
@@ -27,7 +30,6 @@ import me.onebone.minecombat.gun.Pistol;
 import me.onebone.minecombat.task.StartGameTask;
 import me.onebone.minecombat.task.StopGameTask;
 import me.onebone.minecombat.task.TickTask;
-
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
@@ -235,9 +237,11 @@ public class MineCombat extends PluginBase implements Listener{
 		
 		containers.clear();
 		Map<String, Player> online = this.getServer().getOnlinePlayers();
-		
+
 		int red = 0, blue = 0;
-		for(String username : online.keySet()){
+		List<String> keys = new ArrayList<>(online.keySet());
+		Collections.shuffle(keys);
+		for(String username : keys){
 			Player player = online.get(username);
 			
 			int team = red > blue ? TEAM_BLUE : TEAM_RED;
