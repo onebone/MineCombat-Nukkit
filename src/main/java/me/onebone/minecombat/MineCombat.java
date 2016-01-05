@@ -27,6 +27,7 @@ import java.util.Map;
 
 import me.onebone.minecombat.data.PlayerContainer;
 import me.onebone.minecombat.gun.Pistol;
+import me.onebone.minecombat.task.MortalTask;
 import me.onebone.minecombat.task.StartGameTask;
 import me.onebone.minecombat.task.StopGameTask;
 import me.onebone.minecombat.task.TickTask;
@@ -77,6 +78,7 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	private Map<String, PlayerContainer> containers = null;
 	private Map<String, Map<String, Object[]>> position = null;
+	private List<String> immortal = null;
 	private Map<String[], Integer[]> kills = null;
 	private int[] scores = new int[2];
 	private Object[] nextPos = null;
@@ -93,6 +95,7 @@ public class MineCombat extends PluginBase implements Listener{
 		}else{
 			containers = new HashMap<>();
 			kills = new HashMap<>();
+			immortal = new ArrayList<>();
 			
 			this.chooseNext();
 			
@@ -190,6 +193,9 @@ public class MineCombat extends PluginBase implements Listener{
 			
 			containers.get(player.getName()).setActive();
 			containers.get(player.getName()).getGun().setOwner(player);
+			
+			immortal.add(player.getName());
+			this.getServer().getScheduler().scheduleDelayedTask(new MortalTask(this, player.getName()), 100);
 		}
 		
 		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
@@ -227,6 +233,12 @@ public class MineCombat extends PluginBase implements Listener{
 		if(this.status == STATUS_STOPPED){
 			if(event.getEntity() instanceof Player){
 				event.setCancelled();
+			}
+		}else{
+			if(event.getEntity() instanceof Player){
+				if(immortal.contains(((Player)event.getEntity()).getName())){
+					event.setCancelled();
+				}
 			}
 		}
 	}
@@ -438,6 +450,10 @@ public class MineCombat extends PluginBase implements Listener{
 				break;
 			}
 		}
+	}
+	
+	public void setMortal(String player){
+		immortal.remove(player);
 	}
 	
 	public boolean isColleague(String player1, String player2){
