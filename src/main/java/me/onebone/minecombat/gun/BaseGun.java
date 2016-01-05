@@ -155,12 +155,12 @@ abstract public class BaseGun {
 			}
 			
 			double xcos = Math.cos((owner.getYaw() - 90) / 180 * Math.PI);
-			double zcos = Math.sin((owner.getYaw() - 90) / 180 * Math.PI);
+			double zsin = Math.sin((owner.getYaw() - 90) / 180 * Math.PI);
 			double pcos = Math.cos((owner.getPitch() + 90) / 180 * Math.PI);
 			
 			Map<String, Player> online = server.getOnlinePlayers();
 			for(int c = 0; c < this.getRange(); c++){
-				Vector3 vec = new Vector3(_x - (c * xcos), _y + (c * pcos), _z - (c * zcos));
+				Vector3 vec = new Vector3(_x - (c * xcos), _y + (c * pcos), _z - (c * zsin));
 				level.addParticle(new DustParticle(vec, 0xb3, 0xb3, 0xb3));
 				
 				if(level.getBlock(vec.floor()).isSolid()) return true;
