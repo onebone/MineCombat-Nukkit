@@ -128,6 +128,7 @@ public class MineCombat extends PluginBase implements Listener{
 		if(containers.containsKey(player.getName())){
 			containers.get(player.getName()).quit();
 		}
+		event.setAutoSave(false);
 	}
 	
 	@EventHandler
