@@ -258,7 +258,7 @@ public class MineCombat extends PluginBase implements Listener{
 				if(containers.containsKey(player.getName())){
 					PlayerContainer container = containers.get(player.getName());
 					
-					player.sendPopup(STATUS_FORMAT.replace("%team", "RED")
+					player.sendPopup(STATUS_FORMAT.replace("%team", container.getTeam() == TEAM_RED ? TextFormat.RED + "RED" + TextFormat.WHITE : TextFormat.BLUE + "BLUE" + TextFormat.WHITE)
 						.replace("%gun", container.getGun().getName())
 						.replace("%status", container.isShooting() ? TextFormat.RED + "FIRING" + TextFormat.WHITE : TextFormat.GREEN + "SAFETY" + TextFormat.WHITE)
 						.replace("%ammo", container.getGun().getAmmo() + "")
