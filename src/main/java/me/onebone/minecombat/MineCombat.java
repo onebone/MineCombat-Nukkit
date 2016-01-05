@@ -32,10 +32,13 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.inventory.InventoryPickupItemEvent;
+import cn.nukkit.event.player.PlayerDropItemEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
 import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
+import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
@@ -130,7 +133,26 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 	}
 	
-	@SuppressWarnings("serial")
+	@EventHandler
+	public void onDropItem(PlayerDropItemEvent event){
+		event.setCancelled();
+	}
+	
+	@EventHandler
+	public void onPickup(InventoryPickupItemEvent event){
+		InventoryHolder holder = event.getInventory().getHolder();
+		if(holder instanceof Player){
+			Player player = (Player)holder;
+			if(this.status == STATUS_ONGOING){
+				if(containers.containsKey(player.getName())){
+					containers.get(player.getName()).getGun().addAmmo(30);
+				}
+			}
+		}
+		event.getItem().kill();
+		event.setCancelled();
+	}
+	
 	public boolean onCommand(final CommandSender sender, Command command, String label, String[] args){
 		switch(command.getName()){
 		case "spawnpos":

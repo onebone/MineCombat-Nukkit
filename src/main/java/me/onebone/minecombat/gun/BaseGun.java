@@ -64,6 +64,10 @@ abstract public class BaseGun {
 		return transfer;
 	}
 	
+	public void addAmmo(int amount){
+		this.magazine += amount;
+	}
+	
 	public int getAmmo(){
 		return this.loadedAmmo;
 	}
