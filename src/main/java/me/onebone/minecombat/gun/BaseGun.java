@@ -146,7 +146,7 @@ abstract public class BaseGun {
 					if(player == owner) continue;
 					
 					if(this.canHit(vec, player)){
-						player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
+						player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.isHeadshot(vec, player) ? this.getHeadshotDamage(owner.distance(player)) : this.getDamage(owner.distance(player))));
 						return true;
 					}
 				}
@@ -157,6 +157,14 @@ abstract public class BaseGun {
 	
 	public boolean canHit(Vector3 vec, Player player){
 		return vec.distance(player) < 1;
+	}
+	
+	public boolean isHeadshot(Vector3 vec, Player player){
+		return false;
+	}
+	
+	public int getHeadshotDamage(double distance){
+		return 20;
 	}
 	
 	abstract public boolean canShoot(long fromLastShoot);
