@@ -230,13 +230,13 @@ public class MineCombat extends PluginBase implements Listener{
 			
 			switch(this.status){
 			case STATUS_STOPPED:
-				player.sendTip(TextFormat.GREEN + "Now preparing for the next game.");
+				player.sendPopup(TextFormat.GREEN + "Now preparing for the next game.");
 				break;
 			case STATUS_ONGOING:
 				if(containers.containsKey(player.getName())){
 					PlayerContainer container = containers.get(player.getName());
 					
-					player.sendTip(STATUS_FORMAT.replace("%team", "RED")
+					player.sendPopup(STATUS_FORMAT.replace("%team", "RED")
 						.replace("%gun", container.getGun().getName())
 						.replace("%status", container.isShooting() ? TextFormat.RED + "FIRING" + TextFormat.WHITE : TextFormat.GREEN + "SAFETY" + TextFormat.WHITE)
 						.replace("%ammo", container.getGun().getAmmo() + "")
