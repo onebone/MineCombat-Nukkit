@@ -100,6 +100,7 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 			
 			containers.get(player.getName()).setActive();
+			containers.get(player.getName()).getGun().setOwner(player);
 		}
 		
 		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));

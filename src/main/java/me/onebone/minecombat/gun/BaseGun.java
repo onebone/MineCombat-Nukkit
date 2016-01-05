@@ -55,6 +55,10 @@ abstract public class BaseGun {
 		this(plugin, owner, 50);
 	}
 	
+	public void setOwner(Player owner){
+		this.owner = owner;
+	}
+	
 	public int reload(){
 		if(magazine <= 0) return 0;
 		
