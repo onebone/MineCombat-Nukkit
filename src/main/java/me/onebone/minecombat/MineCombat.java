@@ -259,7 +259,24 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 			return true;
 		case "momap":
+			if(args.length < 0){
+				sender.sendMessage(TextFormat.RED + "Usage: " + command.getUsage());
+				return true;
+			}
 			
+			if(this.status == STATUS_STOPPED){
+				Map<String, Map<String, ArrayList<Object>>> spawns = this.getConfig().get("spawn-pos", new LinkedHashMap<String, Map<String, ArrayList<Object>>>());
+				if(spawns.containsKey(args[0])){
+					nextPos = new Object[]{
+						args[0], spawns.get(args[0])	
+					};
+					sender.sendMessage("Next spawn position was set to: " + TextFormat.GREEN + args[0]);
+				}else{
+					sender.sendMessage("There is no spawn position: " + TextFormat.RED + args[0]);
+				}
+			}else{
+				sender.sendMessage(TextFormat.RED + "The game is ongoing. Try again later.");
+			}
 			return true;
 		}
 		return false;
@@ -303,7 +320,7 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	private void chooseNext(){
-		Map<String, Map<String, Object[]>> spawns = this.getConfig().get("spawn-pos", new LinkedHashMap<String, Map<String, Object[]>>());
+		Map<String, Map<String, ArrayList<Object>>> spawns = this.getConfig().get("spawn-pos", new LinkedHashMap<String, Map<String, ArrayList<Object>>>());
 		
 		List<String> keys = new ArrayList<>(spawns.keySet());
 		Collections.shuffle(keys);
