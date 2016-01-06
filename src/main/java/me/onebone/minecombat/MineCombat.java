@@ -334,11 +334,14 @@ public class MineCombat extends PluginBase implements Listener{
 		
 		for(String username : keys){
 			Player player = online.get(username);
+			if(player.getHealth() <= 0){
+				player.kick("AFK");
+				continue;
+			}
 			
 			int team = red > blue ? TEAM_BLUE : TEAM_RED;
 			if(team == TEAM_RED){
 				red++;
-				
 				player.teleport(spawn[TEAM_RED]);
 			}else{
 				player.teleport(spawn[TEAM_BLUE]);
