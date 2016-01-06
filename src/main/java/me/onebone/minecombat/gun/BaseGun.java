@@ -164,7 +164,7 @@ abstract public class BaseGun {
 				Vector3 vec = new Vector3(_x - (c * xcos), _y + (c * pcos), _z - (c * zsin));
 				level.addParticle(new DustParticle(vec, 0xb3, 0xb3, 0xb3));
 				
-				if(level.getBlock(vec.floor()).isSolid()) return true;
+				if(level.getBlock(new Vector3(Math.floor(vec.x), Math.floor(vec.y), Math.floor(vec.z))).isSolid()) return true;
 				for(String username : online.keySet()){
 					Player player = online.get(username);
 					
