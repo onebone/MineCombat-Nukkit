@@ -36,6 +36,7 @@ import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.TextContainer;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
@@ -106,7 +107,7 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onEquipmentChange(PlayerItemHeldEvent event){
 		Player player = event.getPlayer();
 		Item item = event.getItem();
@@ -134,7 +135,7 @@ public class MineCombat extends PluginBase implements Listener{
 		event.setAutoSave(false);
 	}
 	
-	@EventHandler
+	@EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
 	public void onTouch(PlayerInteractEvent event){
 		Player player = event.getPlayer();
 		

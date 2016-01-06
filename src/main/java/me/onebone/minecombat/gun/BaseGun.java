@@ -124,6 +124,7 @@ abstract public class BaseGun {
 			}
 			
 			this.lastShoot = now;
+			return true;
 		}
 		return false;
 	}
