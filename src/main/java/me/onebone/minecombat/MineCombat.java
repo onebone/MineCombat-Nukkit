@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import me.onebone.minecombat.data.PlayerContainer;
+import me.onebone.minecombat.event.EntityDamageByGunEvent;
 import me.onebone.minecombat.gun.Pistol;
 import me.onebone.minecombat.task.MortalTask;
 import me.onebone.minecombat.task.StartGameTask;
@@ -40,7 +41,6 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.TextContainer;
-import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
@@ -153,8 +153,8 @@ public class MineCombat extends PluginBase implements Listener{
 		if(event.getEntity() instanceof Player){
 			Player player = (Player)event.getEntity();
 			EntityDamageEvent cause = player.getLastDamageCause();
-			if(cause instanceof EntityDamageByEntityEvent && (cause.getCause() == CAUSE_GUN || cause.getCause() == CAUSE_HEADSHOT)){
-				Entity damager = ((EntityDamageByEntityEvent)player.getLastDamageCause()).getDamager();
+			if(cause instanceof EntityDamageByGunEvent && (cause.getCause() == CAUSE_GUN || cause.getCause() == CAUSE_HEADSHOT)){
+				Entity damager = ((EntityDamageByGunEvent)player.getLastDamageCause()).getDamager();
 				if(damager instanceof Player){
 					Player causePlayer = (Player)damager;
 					kills.put(new String[]{

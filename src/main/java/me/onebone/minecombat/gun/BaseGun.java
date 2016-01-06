@@ -23,13 +23,13 @@ import java.util.Map;
 
 import cn.nukkit.Player;
 import cn.nukkit.Server;
-import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.DustParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.ExplodePacket;
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.ShootThread;
+import me.onebone.minecombat.event.EntityDamageByGunEvent;
 
 abstract public class BaseGun {
 	private MineCombat plugin;
@@ -172,9 +172,9 @@ abstract public class BaseGun {
 					
 					if(this.canHit(vec, player)){
 						if(this.isHeadshot(vec, player)){
-							player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_HEADSHOT, this.getHeadshotDamage(owner.distance(player))));
+							player.attack(new EntityDamageByGunEvent(owner, player, MineCombat.CAUSE_HEADSHOT, this.getHeadshotDamage(owner.distance(player))));
 						}else{
-							player.attack(new EntityDamageByEntityEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
+							player.attack(new EntityDamageByGunEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
 						}
 						return true;
 					}
