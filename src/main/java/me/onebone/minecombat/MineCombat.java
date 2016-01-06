@@ -31,6 +31,7 @@ import me.onebone.minecombat.task.MortalTask;
 import me.onebone.minecombat.task.StartGameTask;
 import me.onebone.minecombat.task.StopGameTask;
 import me.onebone.minecombat.task.TickTask;
+
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
@@ -186,7 +187,6 @@ public class MineCombat extends PluginBase implements Listener{
 				int team = this.countPlayers(TEAM_BLUE) < this.countPlayers(TEAM_RED) ? TEAM_BLUE : TEAM_RED; 
 				containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
 			}
-			event.setRespawnPosition(spawn[this.getTeam(player.getName())]);
 			
 			if(containers.containsKey(player.getName())){
 				containers.get(player.getName()).setActive();
@@ -197,6 +197,9 @@ public class MineCombat extends PluginBase implements Listener{
 			
 			immortal.add(player.getName());
 			this.getServer().getScheduler().scheduleDelayedTask(new MortalTask(this, player.getName()), 100);
+			
+			event.setRespawnPosition(spawn[this.getTeam(player.getName())]);
+			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
 		
 		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
@@ -350,6 +353,8 @@ public class MineCombat extends PluginBase implements Listener{
 			
 			player.setHealth(20);
 			containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
+			
+			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
 		this.getServer().broadcastMessage(TextFormat.GREEN + "Game is started. Enjoy!");
 		
