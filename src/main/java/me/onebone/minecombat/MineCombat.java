@@ -329,7 +329,7 @@ public class MineCombat extends PluginBase implements Listener{
 		Map<String, ArrayList<Object>> spawns = (Map<String, ArrayList<Object>>)nextPos[1];
 		spawn = new Position[]{
 				new Position((double)spawns.get("red").get(0), (double)spawns.get("red").get(1), (double)spawns.get("red").get(2), this.getServer().getLevelByName((String)spawns.get("red").get(3))),
-				new Position((double)spawns.get("red").get(0), (double)spawns.get("blue").get(1), (double)spawns.get("blue").get(2), this.getServer().getLevelByName((String)spawns.get("blue").get(3))),
+				new Position((double)spawns.get("blue").get(0), (double)spawns.get("blue").get(1), (double)spawns.get("blue").get(2), this.getServer().getLevelByName((String)spawns.get("blue").get(3))),
 		};
 		
 		for(String username : keys){
