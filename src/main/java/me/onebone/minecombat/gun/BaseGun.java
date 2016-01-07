@@ -185,7 +185,7 @@ abstract public class BaseGun {
 	}
 	
 	public boolean canHit(Vector3 vec, Player player){
-		return (player.getX() - 1 < vec.getX() && vec.getX() < player.getX() + 1
+		return (!this.plugin.isColleague(player.getName(), this.owner.getName())) && (player.getX() - 1 < vec.getX() && vec.getX() < player.getX() + 1
 				&& player.getY() < vec.getY() && vec.getY() < player.getY() + player.getHeight()
 				&& player.getZ() - 1 < vec.getZ() && vec.getZ() < player.getZ() + 1);
 	}
