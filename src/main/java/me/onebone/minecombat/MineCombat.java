@@ -27,12 +27,12 @@ import java.util.Map;
 
 import me.onebone.minecombat.data.PlayerContainer;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
+import me.onebone.minecombat.gun.BaseGun;
 import me.onebone.minecombat.gun.Pistol;
 import me.onebone.minecombat.task.MortalTask;
 import me.onebone.minecombat.task.StartGameTask;
 import me.onebone.minecombat.task.StopGameTask;
 import me.onebone.minecombat.task.TickTask;
-
 import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
@@ -78,6 +78,7 @@ public class MineCombat extends PluginBase implements Listener{
 			+ TextFormat.GREEN + "Now preparing for the next game.\n" + TextFormat.WHITE
 			+ "Next: " + TextFormat.GOLD + "%next";
 	
+	private ShootThread thr = null;
 	private Map<String, PlayerContainer> containers = null;
 	private Map<String, Map<String, Object[]>> position = null;
 	private List<String> immortal = null;
@@ -87,6 +88,14 @@ public class MineCombat extends PluginBase implements Listener{
 	private Position[] spawn = null;
 	
 	private int status = STATUS_STOPPED;
+	
+	public void registerGun(BaseGun gun){
+		this.thr.registerGun(gun);
+	}
+	
+	public void removeGun(BaseGun gun){
+		this.thr.removeGun(gun);
+	}
 	
 	public void onEnable(){
 		this.saveDefaultConfig();
@@ -105,6 +114,13 @@ public class MineCombat extends PluginBase implements Listener{
 			
 			this.getServer().getScheduler().scheduleDelayedRepeatingTask(new TickTask(this), 10, 10);
 			this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 20);
+		}
+	}
+	
+	public void onDisable(){
+		if(this.thr != null){
+			this.closeAllContainers();
+			this.thr.close();
 		}
 	}
 	
@@ -185,7 +201,7 @@ public class MineCombat extends PluginBase implements Listener{
 		if(this.status == STATUS_ONGOING){
 			if(!containers.containsKey(player.getName())){
 				int team = this.countPlayers(TEAM_BLUE) < this.countPlayers(TEAM_RED) ? TEAM_BLUE : TEAM_RED; 
-				containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
+				containers.put(player.getName(), new PlayerContainer(this, player, new Pistol(this, player), team));
 			}
 			
 			if(containers.containsKey(player.getName())){
@@ -320,6 +336,8 @@ public class MineCombat extends PluginBase implements Listener{
 	public void startGame(){
 		this.status = STATUS_ONGOING;
 		
+		this.thr = new ShootThread();
+
 		scores = new int[2];
 		containers.clear();
 		Map<String, Player> online = this.getServer().getOnlinePlayers();
@@ -352,10 +370,13 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 			
 			player.setHealth(20);
-			containers.put(player.getName(), new PlayerContainer(player, new Pistol(this, player), team));
+			containers.put(player.getName(), new PlayerContainer(this, player, new Pistol(this, player), team));
 			
 			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
+		
+		this.thr.start();
+		
 		this.getServer().broadcastMessage(TextFormat.GREEN + "Game is started. Enjoy!");
 		
 		this.getServer().getScheduler().scheduleDelayedTask(new StopGameTask(this), this.getConfig().get("game-time", 300) * 20);
@@ -372,8 +393,17 @@ public class MineCombat extends PluginBase implements Listener{
 		};
 	}
 	
+	private void closeAllContainers(){
+		for(String key : containers.keySet()){
+			containers.get(key).quit();
+		}
+	}
+	
 	public void stopGame(){
 		this.status = STATUS_STOPPED;
+		
+		this.closeAllContainers();
+		this.thr.close();
 		
 		this.getServer().broadcastMessage(TextFormat.YELLOW + "Game is finished.");
 		

@@ -19,24 +19,41 @@ package me.onebone.minecombat;
  */
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import me.onebone.minecombat.gun.BaseGun;
 
 public class ShootThread extends Thread{
-	private BaseGun gun;
+	private List<BaseGun> guns;
 	private boolean active = true, closed = false;
 	
-	public ShootThread(BaseGun gun){
-		this.gun = gun;
+	public ShootThread(){
+		this.guns = new ArrayList<>();
+	}
+	
+	public void registerGun(BaseGun gun){
+		if(!this.guns.contains(gun)){
+			this.guns.add(gun);
+		}
+	}
+	
+	public void removeGun(BaseGun gun){
+		if(this.guns.contains(gun)){
+			this.guns.remove(gun);
+		}
 	}
 	
 	public void run(){
 		while(true){
 			if(closed) return;
 			if(active){
-				this.gun.shoot();
+				for(BaseGun gun : this.guns){
+					gun.shoot();
+				}
 			}
 			try{
-				Thread.sleep(10);
+				Thread.sleep(50);
 			}catch(InterruptedException e){
 				e.printStackTrace();
 			}
@@ -48,6 +65,8 @@ public class ShootThread extends Thread{
 	}
 	
 	public void close(){
+		this.guns.clear();
+		
 		this.closed = true;
 	}
 }

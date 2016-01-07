@@ -19,6 +19,7 @@ package me.onebone.minecombat.data;
  */
 
 
+import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.gun.BaseGun;
 import cn.nukkit.Player;
 
@@ -26,10 +27,12 @@ public class PlayerContainer{
 	private Player player;
 	private BaseGun gun;
 	private int team;
+	private MineCombat plugin;
 	
 	private boolean active = true;
 	
-	public PlayerContainer(Player player, BaseGun gun, int team){
+	public PlayerContainer(MineCombat plugin, Player player, BaseGun gun, int team){
+		this.plugin = plugin;
 		this.player = player;
 		this.gun = gun;
 		this.team = team;
@@ -37,6 +40,7 @@ public class PlayerContainer{
 	
 	public void quit(){
 		if(this.active){
+			this.plugin.removeGun(this.gun);
 			this.gun.setShooting(false);
 			this.active = false;
 		}

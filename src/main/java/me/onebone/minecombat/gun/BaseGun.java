@@ -27,8 +27,8 @@ import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.DustParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.ExplodePacket;
+
 import me.onebone.minecombat.MineCombat;
-import me.onebone.minecombat.ShootThread;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
 
 abstract public class BaseGun {
@@ -40,16 +40,13 @@ abstract public class BaseGun {
 	protected long lastShoot = 0;
 	private boolean isShooting = false, unsetFire = false;
 	
-	private ShootThread thr;
-	
 	public BaseGun(MineCombat plugin, Player owner, int magazine){
 		this.magazine = magazine;
 		this.owner = owner;
 		
 		this.plugin = plugin;
-		
-		this.thr = new ShootThread(this);
-		this.thr.start();
+
+		this.plugin.registerGun(this);
 	}
 	
 	public BaseGun(MineCombat plugin, Player owner){
