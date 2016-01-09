@@ -162,10 +162,8 @@ abstract public class BaseGun {
 				level.addParticle(new DustParticle(vec, 0xb3, 0xb3, 0xb3));
 				
 				if(level.getBlock(new Vector3(Math.floor(vec.x), Math.floor(vec.y), Math.floor(vec.z))).isSolid()) return true;
-				for(String username : online.keySet()){
-					Player player = online.get(username);
-					
-					if(player == owner) continue;
+				online.values().forEach((player) -> {
+					if(player == owner) return;
 					
 					if(this.canHit(vec, player)){
 						if(this.isHeadshot(vec, player)){
@@ -173,9 +171,8 @@ abstract public class BaseGun {
 						}else{
 							player.attack(new EntityDamageByGunEvent(owner, player, MineCombat.CAUSE_GUN, this.getDamage(owner.distance(player))));
 						}
-						return true;
 					}
-				}
+				});
 			}
 		}
 		return true;

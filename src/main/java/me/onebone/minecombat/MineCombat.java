@@ -478,10 +478,7 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 		}
 		
-		Map<String, Player> online = this.getServer().getOnlinePlayers();
-		for(String username : online.keySet()){
-			Player player = online.get(username);
-			
+		this.getServer().getOnlinePlayers().values().forEach((player) -> {
 			switch(this.status){
 			case STATUS_STOPPED:
 				player.sendPopup(PREPARE_FORMAT
@@ -518,7 +515,7 @@ public class MineCombat extends PluginBase implements Listener{
 				}
 				break;
 			}
-		}
+		});
 	}
 	
 	public void setMortal(String player){
@@ -540,14 +537,14 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	private void sendAllNameTags(){
-		
-		for(String username : containers.keySet()){
-			Player player = containers.get(username).getPlayer();
+		containers.values().forEach((container) -> {
+			Player player = container.getPlayer();
+			
 			for(String u : containers.keySet()){
 				Player to = containers.get(u).getPlayer();
 				
 				to.sendData(player);
 			}
-		}
+		});
 	}
 }
