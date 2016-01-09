@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import me.onebone.minecombat.data.PlayerContainer;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
@@ -83,13 +84,16 @@ public class MineCombat extends PluginBase implements Listener{
 			+ "Next: " + TextFormat.GOLD + "%next";
 	
 	private ShootThread thr = null;
+	
 	private Map<String, PlayerContainer> containers = null;
-	private Map<String, Map<String, Object[]>> position = null;
 	private List<String> immortal = null;
 	private Map<String[], Integer[]> kills = null;
-	private int[] scores = new int[2];
+	
+	private Map<String, Map<String, Object[]>> position = null;
 	private Object[] nextPos = null;
 	private Position[] spawn = null;
+	
+	private int[] scores = new int[2];
 	
 	private int status = STATUS_STOPPED;
 	
@@ -117,6 +121,7 @@ public class MineCombat extends PluginBase implements Listener{
 			this.getServer().getPluginManager().registerEvents(this, this);
 			
 			this.getServer().getScheduler().scheduleDelayedRepeatingTask(new TickTask(this), 10, 10);
+			
 			this.getServer().getScheduler().scheduleDelayedTask(new StartGameTask(this), this.getConfig().get("prepare-time", 60) * 20);
 		}
 	}
@@ -283,11 +288,13 @@ public class MineCombat extends PluginBase implements Listener{
 				if(pk.eid != 0){
 					Player player = event.getPlayer();
 					
-					Player to = this.getServer().getOnlinePlayers().values().stream().filter((v) -> {
-						return v.getId() == pk.eid;
-					}).findFirst().get();
-					
-					pk.metadata.put(Entity.DATA_NAMETAG, new StringEntityData((this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + to.getName()));
+					try{
+						Player to = this.getServer().getOnlinePlayers().values().stream().filter((v) -> {
+							return v.getId() == pk.eid;
+						}).findFirst().get();
+						
+						pk.metadata.put(Entity.DATA_NAMETAG, new StringEntityData((this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + to.getName()));
+					}catch(NoSuchElementException e){}
 				}
 			}
 		}
@@ -369,7 +376,8 @@ public class MineCombat extends PluginBase implements Listener{
 		this.thr = new ShootThread();
 
 		scores = new int[2];
-		containers.clear();
+		this.closeAllContainers();
+		
 		Map<String, Player> online = this.getServer().getOnlinePlayers();
 
 		int red = 0, blue = 0;

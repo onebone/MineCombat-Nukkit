@@ -29,10 +29,7 @@ public class Pistol extends BaseGun{
 
 	@Override
 	public boolean canShoot(long fromLastShoot){
-		if(fromLastShoot > 400){
-			return true;
-		}
-		return false;
+		return fromLastShoot > 400;
 	}
 
 	@Override

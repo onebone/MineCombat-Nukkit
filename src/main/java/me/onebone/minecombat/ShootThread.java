@@ -48,9 +48,11 @@ public class ShootThread extends Thread{
 		while(true){
 			if(closed) return;
 			if(active){
-				for(BaseGun gun : this.guns){
-					gun.shoot();
-				}
+				try{
+					for(BaseGun gun : this.guns){
+						gun.shoot();
+					}
+				}catch(Exception e){}
 			}
 			try{
 				Thread.sleep(50);
