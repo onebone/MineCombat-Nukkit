@@ -45,8 +45,6 @@ abstract public class BaseGun {
 		this.owner = owner;
 		
 		this.plugin = plugin;
-
-		this.plugin.registerGun(this);
 	}
 	
 	public BaseGun(MineCombat plugin, Player owner){

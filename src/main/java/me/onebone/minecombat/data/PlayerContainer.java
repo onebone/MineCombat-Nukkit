@@ -29,7 +29,7 @@ public class PlayerContainer{
 	private int team;
 	private MineCombat plugin;
 	
-	private boolean active = true;
+	private boolean active = false;
 	
 	public PlayerContainer(MineCombat plugin, Player player, BaseGun gun, int team){
 		this.plugin = plugin;
@@ -55,7 +55,10 @@ public class PlayerContainer{
 	}
 	
 	public void setActive(){
-		this.active = true;
+		if(!this.active){
+			this.plugin.registerGun(this.gun);
+			this.active = true;
+		}
 	}
 	
 	public boolean isActive(){

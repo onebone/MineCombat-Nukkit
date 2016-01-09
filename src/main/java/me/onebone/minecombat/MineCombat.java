@@ -228,7 +228,6 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 		
 		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
-		player.getInventory().setHotbarSlotIndex(0, 3);
 	}
 	
 	@EventHandler
@@ -408,7 +407,10 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 			
 			player.setHealth(20);
-			containers.put(player.getName(), new PlayerContainer(this, player, new Pistol(this, player), team));
+
+			PlayerContainer container = new PlayerContainer(this, player, new Pistol(this, player), team);
+			container.setActive();
+			containers.put(player.getName(), container);
 			
 			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
@@ -480,11 +482,11 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	public void onTick(int now){
-		for(String[] key : kills.keySet()){
-			if(now - 50 > kills.get(key)[0]){
-				kills.remove(key);
+		kills.forEach((k, v) -> {
+			if(now - 80 > v[0]){
+				kills.remove(k);
 			}
-		}
+		});
 		
 		this.getServer().getOnlinePlayers().values().forEach((player) -> {
 			switch(this.status){
@@ -548,11 +550,11 @@ public class MineCombat extends PluginBase implements Listener{
 		containers.values().forEach((container) -> {
 			Player player = container.getPlayer();
 			
-			for(String u : containers.keySet()){
-				Player to = containers.get(u).getPlayer();
+			containers.values().forEach((container1) -> {
+				Player to = container1.getPlayer();
 				
 				to.sendData(player);
-			}
+			});
 		});
 	}
 }
