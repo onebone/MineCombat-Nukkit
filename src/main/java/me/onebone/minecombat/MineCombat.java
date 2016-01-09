@@ -37,6 +37,7 @@ import cn.nukkit.Player;
 import cn.nukkit.command.Command;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
@@ -48,11 +49,14 @@ import cn.nukkit.event.player.PlayerDropItemEvent;
 import cn.nukkit.event.player.PlayerFoodLevelChangeEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
+import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.event.player.PlayerRespawnEvent;
+import cn.nukkit.event.server.DataPacketSendEvent;
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Position;
+import cn.nukkit.network.protocol.SetEntityDataPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.utils.TextFormat;
 
@@ -223,6 +227,13 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	@EventHandler
+	public void onJoin(PlayerJoinEvent event){
+		this.getServer().getOnlinePlayers().values().forEach((player) -> {
+			event.getPlayer().sendData(player);
+		});
+	}
+	
+	@EventHandler
 	public void onDropItem(PlayerDropItemEvent event){
 		event.setCancelled();
 	}
@@ -258,6 +269,25 @@ public class MineCombat extends PluginBase implements Listener{
 			if(event.getEntity() instanceof Player){
 				if(immortal.contains(((Player)event.getEntity()).getName())){
 					event.setCancelled();
+				}
+			}
+		}
+	}
+	
+	@EventHandler
+	public void onSendPacket(DataPacketSendEvent event){
+		if(this.status == STATUS_ONGOING){
+			if(event.getPacket() instanceof SetEntityDataPacket){
+				SetEntityDataPacket pk = (SetEntityDataPacket) event.getPacket();
+				
+				if(pk.eid != 0){
+					Player player = event.getPlayer();
+					
+					Player to = this.getServer().getOnlinePlayers().values().stream().filter((v) -> {
+						return v.getId() == pk.eid;
+					}).findFirst().get();
+					
+					pk.metadata.put(Entity.DATA_NAMETAG, new StringEntityData((this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + to.getName()));
 				}
 			}
 		}
@@ -375,10 +405,10 @@ public class MineCombat extends PluginBase implements Listener{
 			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
 		
+		this.sendAllNameTags();
 		this.thr.start();
 		
 		this.getServer().broadcastMessage(TextFormat.GREEN + "Game is started. Enjoy!");
-		
 		this.getServer().getScheduler().scheduleDelayedTask(new StopGameTask(this), this.getConfig().get("game-time", 300) * 20);
 	}
 	
@@ -507,5 +537,17 @@ public class MineCombat extends PluginBase implements Listener{
 			return containers.get(player).getTeam();
 		}
 		return -1;
+	}
+	
+	private void sendAllNameTags(){
+		
+		for(String username : containers.keySet()){
+			Player player = containers.get(username).getPlayer();
+			for(String u : containers.keySet()){
+				Player to = containers.get(u).getPlayer();
+				
+				to.sendData(player);
+			}
+		}
 	}
 }
