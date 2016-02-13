@@ -289,7 +289,7 @@ public class MineCombat extends PluginBase implements Listener{
 					
 					this.getServer().getOnlinePlayers().values().forEach((to) -> {
 						if(to.getId() == pk.eid){
-							pk.metadata.put(Entity.DATA_NAMETAG, new StringEntityData((this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + to.getName()));
+							pk.metadata.put(new StringEntityData(Entity.DATA_NAMETAG, (this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + to.getName()));
 						}
 					});
 				}
