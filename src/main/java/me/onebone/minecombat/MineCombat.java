@@ -260,7 +260,7 @@ public class MineCombat extends PluginBase implements Listener{
 	@EventHandler
 	public void onFoodLevelChange(PlayerFoodLevelChangeEvent event){
 		event.setFoodLevel(20);
-		event.setFoodSaturationLevel(20);
+		event.setFoodSaturationLevel(20F);
 	}
 	
 	@EventHandler
