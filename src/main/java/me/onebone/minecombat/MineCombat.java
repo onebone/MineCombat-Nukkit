@@ -50,7 +50,6 @@ import cn.nukkit.event.player.PlayerDropItemEvent;
 import cn.nukkit.event.player.PlayerFoodLevelChangeEvent;
 import cn.nukkit.event.player.PlayerInteractEvent;
 import cn.nukkit.event.player.PlayerItemHeldEvent;
-import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.event.server.DataPacketSendEvent;
@@ -226,15 +225,12 @@ public class MineCombat extends PluginBase implements Listener{
 			event.setRespawnPosition(spawn[this.getTeam(player.getName())]);
 			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
+
+		this.getServer().getOnlinePlayers().values().forEach((p) -> {
+			event.getPlayer().sendData(p);
+		});
 		
 		player.getInventory().setItem(0, Item.get(GUN_ITEM_ID));
-	}
-	
-	@EventHandler
-	public void onJoin(PlayerJoinEvent event){
-		this.getServer().getOnlinePlayers().values().forEach((player) -> {
-			event.getPlayer().sendData(player);
-		});
 	}
 	
 	@EventHandler
