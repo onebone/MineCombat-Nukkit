@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
 import me.onebone.minecombat.data.PlayerContainer;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
@@ -43,6 +42,7 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.TextContainer;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
@@ -212,10 +212,6 @@ public class MineCombat extends PluginBase implements Listener{
 				containers.put(player.getName(), new PlayerContainer(this, player, new Pistol(this, player), team));
 			}
 			
-			if(containers.containsKey(player.getName())){
-				containers.get(player.getName()).setActive();
-			}
-			
 			containers.get(player.getName()).setActive();
 			containers.get(player.getName()).getGun().setOwner(player);
 			
@@ -225,7 +221,7 @@ public class MineCombat extends PluginBase implements Listener{
 			event.setRespawnPosition(spawn[this.getTeam(player.getName())]);
 			player.setSpawn(spawn[this.getTeam(player.getName())]);
 		}
-
+		
 		this.getServer().getOnlinePlayers().values().forEach((p) -> {
 			event.getPlayer().sendData(p);
 		});
@@ -268,6 +264,15 @@ public class MineCombat extends PluginBase implements Listener{
 		}else{
 			if(event.getEntity() instanceof Player){
 				if(immortal.contains(((Player)event.getEntity()).getName())){
+					event.setCancelled();
+				}
+			}
+		}
+		
+		if(event instanceof EntityDamageByEntityEvent){
+			EntityDamageByEntityEvent e = (EntityDamageByEntityEvent) event;
+			if(e.getDamager() instanceof Player){
+				if(this.isColleague(e.getDamager().getName(), e.getEntity().getName()) || this.status != STATUS_ONGOING){
 					event.setCancelled();
 				}
 			}
