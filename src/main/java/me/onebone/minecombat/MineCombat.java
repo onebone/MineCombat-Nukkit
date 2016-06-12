@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import me.onebone.minecombat.data.PlayerContainer;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
@@ -376,10 +377,10 @@ public class MineCombat extends PluginBase implements Listener{
 		scores = new int[2];
 		this.closeAllContainers();
 		
-		Map<String, Player> online = this.getServer().getOnlinePlayers();
+		Map<UUID, Player> online = this.getServer().getOnlinePlayers();
 
 		int red = 0, blue = 0;
-		List<String> keys = new ArrayList<>(online.keySet());
+		List<UUID> keys = new ArrayList<>(online.keySet());
 		Collections.shuffle(keys);
 		
 		@SuppressWarnings("unchecked")
@@ -389,8 +390,8 @@ public class MineCombat extends PluginBase implements Listener{
 				new Position((double)spawns.get("blue").get(0), (double)spawns.get("blue").get(1), (double)spawns.get("blue").get(2), this.getServer().getLevelByName((String)spawns.get("blue").get(3))),
 		};
 		
-		for(String username : keys){
-			Player player = online.get(username);
+		for(UUID uuid : keys){
+			Player player = online.get(uuid);
 			if(player.getHealth() <= 0){
 				player.kick("AFK");
 				continue;
@@ -446,9 +447,9 @@ public class MineCombat extends PluginBase implements Listener{
 		
 		this.getServer().broadcastMessage(TextFormat.YELLOW + "Game is finished.");
 		
-		Map<String, Player> online = this.getServer().getOnlinePlayers();
-		for(String username : online.keySet()){
-			Player player = online.get(username);
+		Map<UUID, Player> online = this.getServer().getOnlinePlayers();
+		for(UUID uuid : online.keySet()){
+			Player player = online.get(uuid);
 			if(this.getTeam(player.getName()) == TEAM_RED && scores[TEAM_RED] > scores[TEAM_BLUE] || this.getTeam(player.getName()) == TEAM_BLUE && scores[TEAM_BLUE] > scores[TEAM_RED]){
 				player.sendMessage(TextFormat.GREEN + "Your team has won the game!");
 			}else if(scores[TEAM_RED] == scores[TEAM_BLUE]){

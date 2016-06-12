@@ -19,6 +19,7 @@ package me.onebone.minecombat.gun;
  */
 
 
+import java.util.Collection;
 import java.util.Map;
 
 import cn.nukkit.Player;
@@ -27,7 +28,6 @@ import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.DustParticle;
 import cn.nukkit.math.Vector3;
 import cn.nukkit.network.protocol.ExplodePacket;
-
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
 
@@ -154,13 +154,13 @@ abstract public class BaseGun {
 			double zsin = Math.sin((owner.getYaw() - 90) / 180 * Math.PI);
 			double pcos = Math.cos((owner.getPitch() + 90) / 180 * Math.PI);
 			
-			Map<String, Player> online = server.getOnlinePlayers();
+			Collection<Player> online = server.getOnlinePlayers().values();
 			for(int c = 0; c < this.getRange(); c++){
 				Vector3 vec = new Vector3(_x - (c * xcos), _y + (c * pcos), _z - (c * zsin));
 				level.addParticle(new DustParticle(vec, 0xb3, 0xb3, 0xb3));
 				
 				if(level.getBlock(new Vector3(Math.floor(vec.x), Math.floor(vec.y), Math.floor(vec.z))).isSolid()) return true;
-				online.values().forEach((player) -> {
+				online.forEach((player) -> {
 					if(player == owner) return;
 					
 					if(this.canHit(vec, player)){
