@@ -1,0 +1,9 @@
+name: MineCombat
+version: "@VERSION@"
+api: [1.0.0]
+author: onebone
+main: me.onebone.minecombat.MineCombat
+
+permissions:
+  minecombat:
+    description: Includes all permmissions of MineCombat
