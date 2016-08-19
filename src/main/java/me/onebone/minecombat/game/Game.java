@@ -10,14 +10,16 @@ import me.onebone.minecombat.MineCombat;
 
 public abstract class Game{
 	protected MineCombat plugin;
-	protected HashMap<Integer, List<Player>> players = new HashMap<>();
+	protected List<Player> players = new ArrayList<>();
+	protected Position[] position;
 	
 	private final String name;
 	
-	public Game(MineCombat plugin, String name){
+	public Game(MineCombat plugin, String name, Position[] position){
 		this.plugin = plugin;
 		
 		this.name = name;
+		this.position = position;
 	}
 	
 	public String getName(){
@@ -28,25 +30,20 @@ public abstract class Game{
 	 * @return Stand by time in tick. Returns <= 0 if none.
 	 */
 	public int getStandByTime(){
-		return 300;
+		return 1200;
 	}
 	
-	public final HashMap<Integer, List<Player>> getParticipants(){
-		return new HashMap<Integer, List<Player>>(this.players);
+	public final List<Player> getParticipants(){
+		return new ArrayList<Player>(this.players);
 	}
-	
-	public final List<Player> getParticipants(int index){
-		return new ArrayList<Player>(this.players.get(index));
-	}
-	
+
 	/**
 	 * Initializes each game.
 	 * 
-	 * @param position 		Start, end position of game. null if world is not limited.
 	 * @param players		Initially joined participants
 	 * @return				`true` if successfully started, `false` if not.
 	 */
-	public abstract boolean startGame(Position[] position, List<Player> players);
+	public abstract boolean startGame(List<Player> players);
 	
 	/**
 	 * Called when participant of game moved.
@@ -67,16 +64,7 @@ public abstract class Game{
 			return false;
 		}
 		
-		List<Player> list = null;
-		if(!players.containsKey(index)){
-			list = players.get(index);
-			
-			if(list == null){
-				players.put(index, list = new ArrayList<Player>());
-			}
-		}
-		
-		list.add(player);
+		players.add(player);
 		return true;
 	}
 	
@@ -86,12 +74,6 @@ public abstract class Game{
 	 * @param player
 	 */
 	public void leavePlayer(Player player){
-		for(int index : players.keySet()){
-			List<Player> list = players.get(index);
-			
-			if(list != null){
-				if(list.remove(player)) return;
-			}
-		}
+		players.remove(player);
 	}
 }

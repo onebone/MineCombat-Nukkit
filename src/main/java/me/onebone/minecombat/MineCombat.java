@@ -12,7 +12,10 @@ import cn.nukkit.plugin.PluginBase;
 import me.onebone.minecombat.game.Game;
 
 public class MineCombat extends PluginBase implements Listener{
-	private HashMap<String, GameContainer> games = new HashMap<>();
+	private HashMap<Integer, GameContainer> ongoing = new HashMap<>();
+	private HashMap<String, Class<? extends Game>> games = new HashMap<>();
+
+	private int index = 0;
 	
 	/**
 	 * Provides game which player is participated in
@@ -21,18 +24,31 @@ public class MineCombat extends PluginBase implements Listener{
 	 * @return Game instance of player joined, null if not joined
 	 */
 	public Game getJoinedGame(Player player){
-		for(String game : this.games.keySet()){
-			GameContainer container = this.games.get(game);
-			
-			for(int index : container.game.getParticipants().keySet()){
-				List<Player> players = container.game.getParticipants(index);
-				if(players.contains(player)){
-					return container.game;
-				}
+		for(int index : this.ongoing.keySet()){
+			GameContainer container = this.ongoing.get(index);
+			if(container.game.getParticipants().contains(player)){
+				return container.game;
 			}
 		}
 		
 		return null;
+	}
+
+	public boolean startGame(String name, Position[] position, List<Player> players){
+		if(!games.containsKey(name)){
+			return false;
+		}
+		
+		try{
+			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class).newInstance(this, name, position);
+			GameContainer container = new GameContainer(game);
+			container.startGame(players);
+			this.ongoing.put(index++, container);
+		}catch(Exception e){
+			return false;
+		}
+
+		return true;
 	}
 	
 	@Override
@@ -50,19 +66,17 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 	}
 	
-	public boolean addGame(Game game){
+	public boolean addGame(Class<? extends Game> game){
 		if(this.games.containsKey(game.getName().toLowerCase())){
 			return false;
 		}
 		
-		this.games.put(game.getName().toLowerCase(), new GameContainer(game));
+		this.games.put(game.getName().toLowerCase(), game);
 		return true;
 	}
 	
 	private class GameContainer{
-		private int index = 0;
 		private Game game = null;
-		private HashMap<Integer, Position[]> ongoing;
 		
 		public GameContainer(Game game){
 			if(game == null){
@@ -76,21 +90,13 @@ public class MineCombat extends PluginBase implements Listener{
 		/**
 		 * Starts game with positions and players. Provide position as null apply to all worlds
 		 * 
-		 * @param position
 		 * @param participants
 		 * @return
 		 */
-		public int startGame(Position[] position, List<Player> participants){
-			if(position != null && position.length < 2){
-				throw new IllegalArgumentException("Provide valid position");
-			}
+		public boolean startGame(List<Player> participants){			
+			game.startGame(participants);
 			
-			if(game.startGame(position, participants)){
-				this.ongoing.put(index, position);
-				return index++;
-			}
-			
-			return -1;
+			return true;
 		}
 	}
 }
