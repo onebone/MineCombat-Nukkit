@@ -6,6 +6,7 @@ import java.util.List;
 
 import cn.nukkit.Player;
 import cn.nukkit.level.Position;
+import cn.nukkit.scheduler.PluginTask;
 import me.onebone.minecombat.MineCombat;
 
 public abstract class Game{
@@ -13,18 +14,38 @@ public abstract class Game{
 	protected List<Player> players = new ArrayList<>();
 	protected Position[] position;
 	
+	private int[] score;
 	private int mode = MineCombat.MODE_STANDBY;
 	private final String name;
+	private int taskId;
 	
 	public Game(MineCombat plugin, String name, Position[] position){
 		this.plugin = plugin;
 		
 		this.name = name;
 		this.position = position;
+		
+		this.score = new int[this.getTeamCount()];
+		
+		this.showScore();
 	}
 	
 	public String getName(){
 		return this.name;
+	}
+	
+	public void showScore(){
+		this.taskId = this.plugin.getServer().getScheduler().scheduleDelayedRepeatingTask(new PluginTask<MineCombat>(this.plugin){
+			public void onRun(int currentTick){
+				for(Player player : Game.this.getParticipants()){
+					// TODO
+				}
+			}
+		}, 10, 10).getTaskId();
+	}
+	
+	public void cancelShowScore(){
+		this.plugin.getServer().getScheduler().cancelTask(taskId);
 	}
 	
 	/**
@@ -32,6 +53,32 @@ public abstract class Game{
 	 */
 	public int getStandByTime(){
 		return 1200;
+	}
+	
+	public int getTeamCount(){
+		return 2;
+	}
+	
+	public boolean increaseTeamScore(int team, int score){
+		if(this.score.length < team){
+			return false;
+		}
+		
+		this.score[team] += score;
+		
+		return true;
+	}
+	
+	public void increaseTeamScore(int team){
+		this.increaseTeamScore(team, 1);
+	}
+	
+	public void resetScore(int team){
+		this.score[team] = 0;
+	}
+	
+	public void resetScores(){
+		this.score = new int[this.getTeamCount()];
 	}
 	
 	public final List<Player> getParticipants(){
