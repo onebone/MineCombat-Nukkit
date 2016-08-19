@@ -13,6 +13,7 @@ public abstract class Game{
 	protected List<Player> players = new ArrayList<>();
 	protected Position[] position;
 	
+	private int mode = MineCombat.MODE_STANDBY;
 	private final String name;
 	
 	public Game(MineCombat plugin, String name, Position[] position){
@@ -38,9 +39,9 @@ public abstract class Game{
 	}
 	
 	public final int getMode(){
-		return this.plugin.getMode(this);
+		return this.mode;
 	}
-
+	
 	/**
 	 * Initializes each game.
 	 * 
@@ -56,6 +57,26 @@ public abstract class Game{
 	 * @return				`true` if success, `false` if not.
 	 */
 	public abstract boolean standBy(List<Player> players);
+	
+	public boolean _standBy(List<Player> players){
+		if(this.standBy(players)){
+			this.mode = MineCombat.MODE_STANDBY;
+			
+			return true;
+		}
+		
+		return false;
+	}
+	
+	public boolean _startGame(List<Player> players){
+		if(this.startGame(players)){
+			this.mode = MineCombat.MODE_ONGOING;
+			
+			return true;
+		}
+		
+		return false;
+	}
 	
 	/**
 	 * Called when participant of game moved.

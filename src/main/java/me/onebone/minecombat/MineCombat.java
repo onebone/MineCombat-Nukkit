@@ -50,6 +50,8 @@ public class MineCombat extends PluginBase implements Listener{
 			this.ongoing.put(index++, container);
 			
 			if(game.getStandByTime() > 0){
+				container.standBy(players);
+				
 				this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(MineCombat.this){
 					public void onRun(int currentTick){
 						container.startGame(players);
@@ -64,18 +66,6 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 		
 		return true;
-	}
-	
-	public int getMode(Game game){
-		for(int index : this.ongoing.keySet()){
-			GameContainer container = this.ongoing.get(index);
-			
-			if(container.game == game){
-				return container.mode;
-			}
-		}
-		
-		return -1; // not found
 	}
 	
 	@Override
@@ -105,8 +95,6 @@ public class MineCombat extends PluginBase implements Listener{
 	private class GameContainer{
 		private Game game = null;
 		
-		private int mode = MineCombat.MODE_STANDBY;
-		
 		public GameContainer(Game game){
 			if(game == null){
 				throw new IllegalArgumentException("Cannot add null game");
@@ -123,9 +111,7 @@ public class MineCombat extends PluginBase implements Listener{
 		 * @return
 		 */
 		public boolean startGame(List<Player> participants){			
-			game.startGame(participants);
-			
-			return true;
+			return game._startGame(participants);
 		}
 		
 		/**
@@ -134,12 +120,7 @@ public class MineCombat extends PluginBase implements Listener{
 		 * @return
 		 */
 		public boolean standBy(List<Player> participants){
-			if(game.standBy(participants)){
-				this.mode = MineCombat.MODE_STANDBY;
-				
-				return true;
-			}
-			return false;
+			return game._standBy(participants);
 		}
 	}
 }
