@@ -9,9 +9,13 @@ import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
+import cn.nukkit.scheduler.PluginTask;
 import me.onebone.minecombat.game.Game;
 
 public class MineCombat extends PluginBase implements Listener{
+	public static final int MODE_STANDBY = 0;
+	public static final int MODE_ONGOING = 1;
+	
 	private HashMap<Integer, GameContainer> ongoing = new HashMap<>();
 	private HashMap<String, Class<? extends Game>> games = new HashMap<>();
 
@@ -34,21 +38,44 @@ public class MineCombat extends PluginBase implements Listener{
 		return null;
 	}
 
-	public boolean startGame(String name, Position[] position, List<Player> players){
+	public boolean initGame(String name, Position[] position, final List<Player> players){
 		if(!games.containsKey(name)){
 			return false;
 		}
 		
 		try{
 			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class).newInstance(this, name, position);
-			GameContainer container = new GameContainer(game);
-			container.startGame(players);
+			final GameContainer container = new GameContainer(game);
+			
 			this.ongoing.put(index++, container);
+			
+			if(game.getStandByTime() > 0){
+				this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(MineCombat.this){
+					public void onRun(int currentTick){
+						container.startGame(players);
+					}
+				}, game.getStandByTime());
+				return true;
+			}
+			
+			container.startGame(players);
 		}catch(Exception e){
 			return false;
 		}
-
+		
 		return true;
+	}
+	
+	public int getMode(Game game){
+		for(int index : this.ongoing.keySet()){
+			GameContainer container = this.ongoing.get(index);
+			
+			if(container.game == game){
+				return container.mode;
+			}
+		}
+		
+		return -1; // not found
 	}
 	
 	@Override
@@ -78,6 +105,8 @@ public class MineCombat extends PluginBase implements Listener{
 	private class GameContainer{
 		private Game game = null;
 		
+		private int mode = MineCombat.MODE_STANDBY;
+		
 		public GameContainer(Game game){
 			if(game == null){
 				throw new IllegalArgumentException("Cannot add null game");
@@ -97,6 +126,20 @@ public class MineCombat extends PluginBase implements Listener{
 			game.startGame(participants);
 			
 			return true;
+		}
+		
+		/**
+		 * Stand by players
+		 * 
+		 * @return
+		 */
+		public boolean standBy(List<Player> participants){
+			if(game.standBy(participants)){
+				this.mode = MineCombat.MODE_STANDBY;
+				
+				return true;
+			}
+			return false;
 		}
 	}
 }

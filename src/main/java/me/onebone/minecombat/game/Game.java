@@ -36,6 +36,10 @@ public abstract class Game{
 	public final List<Player> getParticipants(){
 		return new ArrayList<Player>(this.players);
 	}
+	
+	public final int getMode(){
+		return this.plugin.getMode(this);
+	}
 
 	/**
 	 * Initializes each game.
@@ -44,6 +48,14 @@ public abstract class Game{
 	 * @return				`true` if successfully started, `false` if not.
 	 */
 	public abstract boolean startGame(List<Player> players);
+	
+	/**
+	 * Called when game is standing by
+	 * 
+	 * @param players
+	 * @return				`true` if success, `false` if not.
+	 */
+	public abstract boolean standBy(List<Player> players);
 	
 	/**
 	 * Called when participant of game moved.
