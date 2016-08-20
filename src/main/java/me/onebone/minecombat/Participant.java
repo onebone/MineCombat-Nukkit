@@ -24,4 +24,8 @@ public class Participant{
 		this.joined.removePlayer(this);
 		this.joined = null;
 	}
+	
+	public Player getPlayer(){
+		return this.player;
+	}
 }

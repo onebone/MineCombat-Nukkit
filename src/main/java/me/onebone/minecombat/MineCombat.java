@@ -65,6 +65,19 @@ public class MineCombat extends PluginBase implements Listener{
 			return false;
 		}
 	}
+	
+	public boolean stopGame(Game game){
+		for(GameContainer container : this.ongoing.values()){
+			if(container.game == game){
+				if(container.taskId != -1){
+					this.getServer().getScheduler().cancelTask(container.taskId);
+					return true;
+				}
+				return false;
+			}
+		}
+		return false;
+	}
 
 	private boolean standBy(final GameContainer container, final List<Participant> players){
 		if(container.standBy(players)){
