@@ -46,26 +46,37 @@ public class MineCombat extends PluginBase implements Listener{
 		try{
 			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class).newInstance(this, name, position);
 			final GameContainer container = new GameContainer(game);
-			
+	
+			if(game.getStandByTime() > 0){
+				if(this.standBy(container, players)){
+					this.ongoing.put(index++, container);
+					return true;
+				}
+
+				return false;
+			}
+
 			this.ongoing.put(index++, container);
 			
-			if(game.getStandByTime() > 0){
-				container.standBy(players);
-				
-				this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(MineCombat.this){
-					public void onRun(int currentTick){
-						container.startGame(players);
-					}
-				}, game.getStandByTime());
-				return true;
-			}
-			
-			container.startGame(players);
+			return container.startGame(players);
 		}catch(Exception e){
 			return false;
 		}
-		
-		return true;
+	}
+
+	private boolean standBy(final GameContainer container, final List<Player> players){
+		if(container.standBy(players)){
+			container.taskId = this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(this){
+				public void onRun(int currentTick){
+					if(!container.startGame(players)){
+						MineCombat.this.standBy(container, players);
+					}
+				}
+			}, container.game.getStandByTime()).getTaskId();
+
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -94,6 +105,7 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	private class GameContainer{
 		private Game game = null;
+		private int taskId = -1;
 		
 		public GameContainer(Game game){
 			if(game == null){

@@ -59,8 +59,8 @@ public abstract class Game{
 		return 2;
 	}
 	
-	public boolean increaseTeamScore(int team, int score){
-		if(this.score.length < team){
+	public boolean addTeamScore(int team, int score){
+		if(this.score.length <= team){
 			return false;
 		}
 		
@@ -69,8 +69,8 @@ public abstract class Game{
 		return true;
 	}
 	
-	public void increaseTeamScore(int team){
-		this.increaseTeamScore(team, 1);
+	public void addTeamScore(int team){
+		this.addTeamScore(team, 1);
 	}
 	
 	public void resetScore(int team){
@@ -105,7 +105,7 @@ public abstract class Game{
 	 */
 	public abstract boolean standBy(List<Player> players);
 	
-	public boolean _standBy(List<Player> players){
+	public final boolean _standBy(List<Player> players){
 		if(this.standBy(players)){
 			this.mode = MineCombat.MODE_STANDBY;
 			
@@ -115,7 +115,7 @@ public abstract class Game{
 		return false;
 	}
 	
-	public boolean _startGame(List<Player> players){
+	public final boolean _startGame(List<Player> players){
 		if(this.startGame(players)){
 			this.mode = MineCombat.MODE_ONGOING;
 			
