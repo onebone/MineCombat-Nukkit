@@ -140,7 +140,7 @@ public abstract class Game{
 	 * @return true if approved, false if not
 	 */
 	public boolean addPlayer(Participant player){
-		if(plugin.getJoinedGame(player) != null){
+		if(player.getJoinedGame() != null){
 			return false;
 		}
 

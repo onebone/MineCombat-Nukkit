@@ -11,18 +11,30 @@ public class Participant{
 		this.player = player;
 	}
 
-	public void joinGame(Game game){
+	public boolean joinGame(Game game){
 		if(game == null){
 			throw new IllegalArgumentException("Game cannot be null");
 		}
-
-		game.addPlayer(this);
-		this.joined = game;
+		
+		if(this.joined == null){
+			game.addPlayer(this);
+			this.joined = game;
+			return true;
+		}
+		return false;
 	}
 
-	public void leaveGame(){
-		this.joined.removePlayer(this);
-		this.joined = null;
+	public boolean leaveGame(){
+		if(this.joined != null){
+			this.joined.removePlayer(this);
+			this.joined = null;
+			return true;
+		}
+		return false;
+	}
+
+	public Game getJoinedGame(){
+		return this.joined;
 	}
 	
 	public Player getPlayer(){

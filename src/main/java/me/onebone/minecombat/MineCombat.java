@@ -22,22 +22,31 @@ public class MineCombat extends PluginBase implements Listener{
 	private HashMap<String, Participant> players = new HashMap<>();
 
 	private int index = 0;
-	
+
 	/**
-	 * Provides game which player is participated in
-	 * 
+	 * Make player to join the game
+	 *
+	 * @param game
 	 * @param player
-	 * @return Game instance of player joined, null if not joined
+	 * @return `true` if success, `false` if not
 	 */
-	public Game getJoinedGame(Participant player){
-		for(int index : this.ongoing.keySet()){
-			GameContainer container = this.ongoing.get(index);
-			if(container.game.getParticipants().contains(player)){
-				return container.game;
-			}
+	public boolean joinGame(Game game, Participant player){
+		if(player.getJoinedGame() != null){
+			return false;
 		}
-		
-		return null;
+
+		return player.joinGame(game);
+	}
+
+	/**
+	 * Makes player to leave the game
+	 *
+	 * @param game
+	 * @param player
+	 * @return `true` if success, `false` if not
+	 */
+	public boolean leaveGame(Participant player){
+		return player.leaveGame();
 	}
 
 	public boolean initGame(String name, Position[] position, final List<Participant> players){
@@ -108,7 +117,7 @@ public class MineCombat extends PluginBase implements Listener{
 			Participant participant = players.get(username);
 
 			Game game;
-			if((game = this.getJoinedGame(participant)) != null){
+			if((game = participant.getJoinedGame()) != null){
 				game.onParticipantMove(participant);
 			}
 		}
