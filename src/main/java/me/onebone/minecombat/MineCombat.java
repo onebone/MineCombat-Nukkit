@@ -7,6 +7,7 @@ import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerMoveEvent;
+import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.PluginTask;
@@ -18,6 +19,7 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	private HashMap<Integer, GameContainer> ongoing = new HashMap<>();
 	private HashMap<String, Class<? extends Game>> games = new HashMap<>();
+	private HashMap<String, Participant> players = new HashMap<>();
 
 	private int index = 0;
 	
@@ -27,7 +29,7 @@ public class MineCombat extends PluginBase implements Listener{
 	 * @param player
 	 * @return Game instance of player joined, null if not joined
 	 */
-	public Game getJoinedGame(Player player){
+	public Game getJoinedGame(Participant player){
 		for(int index : this.ongoing.keySet()){
 			GameContainer container = this.ongoing.get(index);
 			if(container.game.getParticipants().contains(player)){
@@ -38,7 +40,7 @@ public class MineCombat extends PluginBase implements Listener{
 		return null;
 	}
 
-	public boolean initGame(String name, Position[] position, final List<Player> players){
+	public boolean initGame(String name, Position[] position, final List<Participant> players){
 		if(!games.containsKey(name)){
 			return false;
 		}
@@ -64,7 +66,7 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 	}
 
-	private boolean standBy(final GameContainer container, final List<Player> players){
+	private boolean standBy(final GameContainer container, final List<Participant> players){
 		if(container.standBy(players)){
 			container.taskId = this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(this){
 				public void onRun(int currentTick){
@@ -87,10 +89,25 @@ public class MineCombat extends PluginBase implements Listener{
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event){
 		Player player = event.getPlayer();
+		String username = player.getName().toLowerCase();
 		
-		Game game;
-		if((game = this.getJoinedGame(player)) != null){
-			game.onParticipantMove(player);
+		if(players.containsKey(username)){
+			Participant participant = players.get(username);
+
+			Game game;
+			if((game = this.getJoinedGame(participant)) != null){
+				game.onParticipantMove(participant);
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerQuit(PlayerQuitEvent event){
+		Player player = event.getPlayer();
+
+		String username = player.getName().toLowerCase();
+		if(players.containsKey(username)){
+			players.remove(username);
 		}
 	}
 	
@@ -122,7 +139,7 @@ public class MineCombat extends PluginBase implements Listener{
 		 * @param participants
 		 * @return
 		 */
-		public boolean startGame(List<Player> participants){			
+		public boolean startGame(List<Participant> participants){			
 			return game._startGame(participants);
 		}
 		
@@ -131,7 +148,7 @@ public class MineCombat extends PluginBase implements Listener{
 		 * 
 		 * @return
 		 */
-		public boolean standBy(List<Player> participants){
+		public boolean standBy(List<Participant> participants){
 			return game._standBy(participants);
 		}
 	}

@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import cn.nukkit.Player;
 import cn.nukkit.level.Position;
 import cn.nukkit.scheduler.PluginTask;
 import me.onebone.minecombat.MineCombat;
+import me.onebone.minecombat.Participant;
 
 public abstract class Game{
 	protected MineCombat plugin;
-	protected List<Player> players = new ArrayList<>();
+	protected List<Participant> players = new ArrayList<>();
 	protected Position[] position;
 	
 	private int[] score;
@@ -37,7 +37,7 @@ public abstract class Game{
 	public void showScore(){
 		this.taskId = this.plugin.getServer().getScheduler().scheduleDelayedRepeatingTask(new PluginTask<MineCombat>(this.plugin){
 			public void onRun(int currentTick){
-				for(Player player : Game.this.getParticipants()){
+				for(Participant player : Game.this.getParticipants()){
 					// TODO
 				}
 			}
@@ -81,8 +81,8 @@ public abstract class Game{
 		this.score = new int[this.getTeamCount()];
 	}
 	
-	public final List<Player> getParticipants(){
-		return new ArrayList<Player>(this.players);
+	public final List<Participant> getParticipants(){
+		return new ArrayList<Participant>(this.players);
 	}
 	
 	public final int getMode(){
@@ -95,7 +95,7 @@ public abstract class Game{
 	 * @param players		Initially joined participants
 	 * @return				`true` if successfully started, `false` if not.
 	 */
-	public abstract boolean startGame(List<Player> players);
+	public abstract boolean startGame(List<Participant> players);
 	
 	/**
 	 * Called when game is standing by
@@ -103,9 +103,9 @@ public abstract class Game{
 	 * @param players
 	 * @return				`true` if success, `false` if not.
 	 */
-	public abstract boolean standBy(List<Player> players);
+	public abstract boolean standBy(List<Participant> players);
 	
-	public final boolean _standBy(List<Player> players){
+	public final boolean _standBy(List<Participant> players){
 		if(this.standBy(players)){
 			this.mode = MineCombat.MODE_STANDBY;
 			
@@ -115,7 +115,7 @@ public abstract class Game{
 		return false;
 	}
 	
-	public final boolean _startGame(List<Player> players){
+	public final boolean _startGame(List<Participant> players){
 		if(this.startGame(players)){
 			this.mode = MineCombat.MODE_ONGOING;
 			
@@ -131,7 +131,7 @@ public abstract class Game{
 	 * @param player
 	 * @return
 	 */
-	public abstract boolean onParticipantMove(Player player);
+	public abstract boolean onParticipantMove(Participant player);
 	
 	/**
 	 * Add player to game
@@ -139,11 +139,11 @@ public abstract class Game{
 	 * @param player
 	 * @return true if approved, false if not
 	 */
-	public boolean addPlayer(int index, Player player){
+	public boolean addPlayer(Participant player){
 		if(plugin.getJoinedGame(player) != null){
 			return false;
 		}
-		
+
 		players.add(player);
 		return true;
 	}
@@ -153,7 +153,7 @@ public abstract class Game{
 	 * 
 	 * @param player
 	 */
-	public void leavePlayer(Player player){
+	public void removePlayer(Participant player){
 		players.remove(player);
 	}
 }
