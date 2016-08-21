@@ -47,10 +47,12 @@ public abstract class Game{
 	}
 
 	public String getScoreMessage(Participant participant){
+		String[] teams = this.getTeams();
+
 		int time = this.getLeftTicks();
 		return this.plugin.getMessage("game.info",
-			(time <= 20*10 ? TextFormat.RED + "" + time : TextFormat.GREEN + "" + time) + TextFormat.WHITE,
-			this.getScoreString(participant)); // TODO
+			teams[participant.getTeam()], (time <= 20*10 ? TextFormat.RED + "" + time : TextFormat.GREEN + "" + time) + TextFormat.WHITE,
+			this.getScoreString(participant)); // TODO: Weapon, left ammo
 	}
 
 	private String getScoreString(Participant participant){
@@ -91,9 +93,16 @@ public abstract class Game{
 	public int getGameTime(){
 		return 1200 * 15; // 15 min
 	}
+
+	public String[] getTeams(){
+		return new String[]{
+			this.plugin.getMessage("game.team.red"),
+			this.plugin.getMessage("game.team.blue")
+		};
+	}
 	
-	public int getTeamCount(){
-		return 2;
+	public final int getTeamCount(){
+		return this.getTeams().length;
 	}
 	
 	public boolean addTeamScore(int team, int score){

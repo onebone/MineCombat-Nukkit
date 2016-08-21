@@ -6,7 +6,7 @@ import me.onebone.minecombat.game.Game;
 public class Participant{
 	private final Player player;
 	private Game joined = null;
-	private int team = -1;
+	private int team = 0;
 
 	public Participant(Player player){
 		this.player = player;

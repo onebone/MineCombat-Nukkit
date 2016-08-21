@@ -1,4 +1,4 @@
 {
 	"join.failed": "&2There is no game ongoing. Failed to join game.",
-	"game.info": "{0}\n{1} / {2}\n{3} : {4}/&2{5}&f"
+	"game.info": "&2{0}&f\n{1} / {2}\n{3} : {4}/&2{5}"
 }
