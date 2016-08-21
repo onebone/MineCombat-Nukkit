@@ -2,10 +2,12 @@ package me.onebone.minecombat;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerJoinEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.level.Position;
@@ -22,6 +24,8 @@ public class MineCombat extends PluginBase implements Listener{
 	private HashMap<String, Participant> players = new HashMap<>();
 
 	private int index = 0;
+
+	private boolean joinRandom = true;
 
 	/**
 	 * Make player to join the game
@@ -76,13 +80,15 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	public boolean stopGame(Game game){
-		for(GameContainer container : this.ongoing.values()){
+		for(int index : this.ongoing.keySet()){
+			GameContainer container = this.ongoing.get(index);
+
 			if(container.game == game){
-				if(container.taskId != -1){
+				if(container.taskId != -1 && this.getServer().getScheduler().isQueued(container.taskId)){
 					this.getServer().getScheduler().cancelTask(container.taskId);
-					return true;
 				}
-				return false;
+				this.ongoing.remove(index);
+				return true;
 			}
 		}
 		return false;
@@ -105,6 +111,10 @@ public class MineCombat extends PluginBase implements Listener{
 	
 	@Override
 	public void onEnable(){
+		this.saveDefaultConfig();
+
+		this.joinRandom = this.getConfig().get("join.random", true);
+
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
 	
@@ -119,6 +129,25 @@ public class MineCombat extends PluginBase implements Listener{
 			Game game;
 			if((game = participant.getJoinedGame()) != null){
 				game.onParticipantMove(participant);
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerJoin(PlayerJoinEvent event){
+		Player player = event.getPlayer();
+		String username = player.getName().toLowerCase();
+
+		Participant participant = new Participant(player);
+
+		if(this.joinRandom){
+			if(this.ongoing.size() > 0){
+				Random random = new Random();
+				Game game = this.ongoing.get(random.nextInt(this.ongoing.size())).game;
+				
+				this.joinGame(game, participant);
+			}else{
+				// TODO: Send message
 			}
 		}
 	}
@@ -161,7 +190,7 @@ public class MineCombat extends PluginBase implements Listener{
 		 * @param participants
 		 * @return
 		 */
-		public boolean startGame(List<Participant> participants){			
+		public boolean startGame(List<Participant> participants){
 			return game._startGame(participants);
 		}
 		
