@@ -193,10 +193,12 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 		}
 
+		this.startGames();
+
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
 
-	public void startGames(){
+	private void startGames(){
 		Map<String, Map<String, Object>> list = this.getConfig().get("games", new LinkedHashMap<String, Map<String, Object>>());
 
 		for(String key : list.keySet()){
