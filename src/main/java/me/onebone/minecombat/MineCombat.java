@@ -1,8 +1,16 @@
 package me.onebone.minecombat;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
@@ -13,11 +21,16 @@ import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.PluginTask;
+import cn.nukkit.utils.TextFormat;
+import cn.nukkit.utils.Utils;
 import me.onebone.minecombat.game.Game;
 
 public class MineCombat extends PluginBase implements Listener{
 	public static final int MODE_STANDBY = 0;
 	public static final int MODE_ONGOING = 1;
+
+	private Map<String, String> lang;
+
 	
 	private HashMap<Integer, GameContainer> ongoing = new HashMap<>();
 	private HashMap<String, Class<? extends Game>> games = new HashMap<>();
@@ -109,11 +122,73 @@ public class MineCombat extends PluginBase implements Listener{
 		return false;
 	}
 	
+	public String getMessage(String key, Object... params){
+		if(this.lang.containsKey(key)){
+			return replaceMessage(this.lang.get(key), params);
+		}
+		return "Could not find message with " + key;
+	}
+	
+	private String replaceMessage(String lang, Object[] params){
+		StringBuilder builder = new StringBuilder();
+		
+		for(int i = 0; i < lang.length(); i++){
+			char c = lang.charAt(i);
+			if(c == '{'){
+				int index;
+				if((index = lang.indexOf('}', i)) != -1){
+					try{
+						String p = lang.substring(i + 1, index);
+						int param = Integer.parseInt(p);
+						
+						if(params.length > param){
+							i = index;
+							
+							builder.append(params[param]);
+							continue;
+						}
+					}catch(NumberFormatException e){}
+				}
+			}
+			builder.append(c);
+		}
+		
+		return TextFormat.colorize(builder.toString());
+	}
+	
 	@Override
 	public void onEnable(){
 		this.saveDefaultConfig();
 
 		this.joinRandom = this.getConfig().get("join.random", true);
+
+		String name = this.getConfig().get("language", "eng");
+		InputStream is = this.getResource("lang_" + name + ".json");
+		if(is == null){
+			this.getLogger().critical("Could not load language file. Changing to default.");
+			
+			is = this.getResource("lang_eng.json");
+		}
+		
+		try{
+			lang = new GsonBuilder().create().fromJson(Utils.readFile(is), new TypeToken<LinkedHashMap<String, String>>(){}.getType());
+		}catch(JsonSyntaxException | IOException e){
+			this.getLogger().critical(e.getMessage());
+		}
+		
+		if(!name.equals("eng")){
+			try{
+				LinkedHashMap<String, String> temp = new GsonBuilder().create().fromJson(Utils.readFile(this.getResource("lang_eng.json")), new TypeToken<LinkedHashMap<String, String>>(){}.getType());
+				temp.forEach((k, v) -> {
+					if(!lang.containsKey(k)){
+						lang.put(k, v);
+					}
+				});
+			}catch(IOException e){
+				this.getLogger().critical(e.getMessage());
+			}
+		}
+
 
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
@@ -147,7 +222,7 @@ public class MineCombat extends PluginBase implements Listener{
 				
 				this.joinGame(game, participant);
 			}else{
-				// TODO: Send message
+				player.sendMessage(this.getMessage("join.failed"));
 			}
 		}
 	}
