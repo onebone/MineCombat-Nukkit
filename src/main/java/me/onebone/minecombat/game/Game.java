@@ -1,8 +1,10 @@
 package me.onebone.minecombat.game;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cn.nukkit.level.Position;
 import cn.nukkit.scheduler.PluginTask;
@@ -12,8 +14,10 @@ import me.onebone.minecombat.Participant;
 
 public abstract class Game{
 	protected MineCombat plugin;
-	protected List<Participant> players = new ArrayList<>();
+	
 	protected Position[] position;
+	protected List<Participant> players = new ArrayList<>();
+	protected  Map<Integer, List<Participant>> teams = new HashMap<>();
 	
 	private int[] score;
 	private int mode = MineCombat.MODE_STANDBY;
@@ -32,7 +36,12 @@ public abstract class Game{
 		this.name = name;
 		this.position = position;
 		
-		this.score = new int[this.getTeamCount()];
+		int count = this.getTeamCount();
+		this.score = new int[count];
+		
+		for(int i = 0; i < count; i++){
+			teams.put(i, new ArrayList<Participant>());
+		}
 		
 		this.showScore();
 	}
@@ -45,7 +54,7 @@ public abstract class Game{
 		this.taskId = this.plugin.getServer().getScheduler().scheduleDelayedRepeatingTask(new PluginTask<MineCombat>(this.plugin){
 			public void onRun(int currentTick){
 				for(Participant player : Game.this.getParticipants()){
-					// TODO
+					player.getPlayer().sendMessage(Game.this.getScoreMessage(player));
 				}
 			}
 		}, 10, 10).getTaskId();
@@ -57,10 +66,10 @@ public abstract class Game{
 		int time = this.getLeftTicks();
 		return this.plugin.getMessage("game.info",
 			teams[participant.getTeam()], (time <= 20*10 ? TextFormat.RED + "" + time : TextFormat.GREEN + "" + time) + TextFormat.WHITE,
-			this.getScoreString(participant)); // TODO: Weapon, left ammo
+			this.getScoreString(participant));
 	}
 
-	private String getScoreString(Participant participant){
+	protected String getScoreString(Participant participant){
 		StringBuilder builder = new StringBuilder();
 		for(int i = 0; i < this.score.length; i++){
 			if(i > 0) builder.append(" / ");
@@ -106,6 +115,25 @@ public abstract class Game{
 		};
 	}
 	
+	public boolean isColleague(Participant one, Participant two){
+		return this.mode == MineCombat.MODE_STANDBY || one.getTeam() == two.getTeam();
+	}
+	
+	protected void selectTeams(){
+		if(this.mode == MineCombat.MODE_STANDBY){
+			List<Participant> cloned = new ArrayList<Participant>(players);
+			Collections.shuffle(cloned);
+
+			int count = this.getTeamCount();
+			for(int i = 0; i < cloned.size(); i++){
+				Participant player = cloned.get(i);
+				player.setTeam(i % count);
+				
+				this.teams.get(i % count).add(player);
+			}
+		}
+	}
+	
 	public final int getTeamCount(){
 		return this.getTeams().length;
 	}
@@ -142,6 +170,7 @@ public abstract class Game{
 	
 	/**
 	 * Initializes each game.
+	 * Call this.selectTeams() to select teams randomly.
 	 * 
 	 * @param players		Initially joined participants
 	 * @return				`true` if successfully started, `false` if not.
@@ -185,6 +214,8 @@ public abstract class Game{
 
 	public final void _stopGame(){
 		this.stopGame();
+		
+		this.teams.values().forEach(l -> l.clear());
 
 		this.mode = MineCombat.MODE_STANDBY;
 	}
@@ -207,7 +238,8 @@ public abstract class Game{
 	public abstract boolean onParticipantMove(Participant player);
 	
 	/**
-	 * Add player to game
+	 * Add player to game.
+	 * You have to select team of player when game is ongoing.
 	 * 
 	 * @param player
 	 * @return true if approved, false if not
@@ -228,5 +260,9 @@ public abstract class Game{
 	 */
 	public void removePlayer(Participant player){
 		players.remove(player);
+		
+		if(this.mode == MineCombat.MODE_ONGOING){
+			this.teams.get(player.getTeam()).remove(player);
+		}
 	}
 }

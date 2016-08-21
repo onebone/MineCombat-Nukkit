@@ -209,7 +209,7 @@ public class MineCombat extends PluginBase implements Listener{
 			String pos2 = (String) game.getOrDefault("pos2", "null");
 
 			Position start = null, end = null;
-			if(pos1 != null && end != null){
+			if(pos1 != null && pos2 != null){
 				String[] pos = pos1.split(" ");
 				if(pos.length >= 4){
 					try{
