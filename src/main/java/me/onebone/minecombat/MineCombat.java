@@ -192,6 +192,14 @@ public class MineCombat extends PluginBase implements Listener{
 
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
+
+	@Override
+	public void onDisable(){
+		this.ongoing.values().forEach(container -> {
+			container.game.closeGame();
+		});
+		this.ongoing.clear();
+	}
 	
 	@EventHandler
 	public void onPlayerMove(PlayerMoveEvent event){
