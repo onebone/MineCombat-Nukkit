@@ -20,7 +20,12 @@ public abstract class Game{
 	private final String name;
 	private int taskId = -1;
 	private long startTime = 0;
-	
+
+	/**
+	 * @param plugin
+	 * @param name		Name of game
+	 * @param position	Position of game field. `null` will given if unlimited.
+	 */
 	public Game(MineCombat plugin, String name, Position[] position){
 		this.plugin = plugin;
 		

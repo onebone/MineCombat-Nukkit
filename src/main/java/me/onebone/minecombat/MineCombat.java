@@ -2,6 +2,7 @@ package me.onebone.minecombat;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -66,13 +67,16 @@ public class MineCombat extends PluginBase implements Listener{
 		return player.leaveGame();
 	}
 
-	public boolean initGame(String name, Position[] position, final List<Participant> players){
+	public boolean initGame(String name, Position[] position, String tag, final List<Participant> players){
 		if(!games.containsKey(name)){
 			return false;
 		}
 		
+		if(position.length < 2 || position[0] == null || position[1] ==null){
+			position = null;
+		}
 		try{
-			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class).newInstance(this, name, position);
+			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class).newInstance(this, tag, position);
 			final GameContainer container = new GameContainer(game);
 	
 			if(game.getStandByTime() > 0){
@@ -189,8 +193,58 @@ public class MineCombat extends PluginBase implements Listener{
 			}
 		}
 
-
 		this.getServer().getPluginManager().registerEvents(this, this);
+	}
+
+	public void startGames(){
+		Map<String, Map<String, Object>> list = this.getConfig().get("games", new LinkedHashMap<String, Map<String, Object>>());
+
+		for(String key : list.keySet()){
+			Map<String, Object> game = list.get(key);
+
+			String type = (String) game.getOrDefault("type", "gunmatch").toString().toLowerCase();
+			String pos1 = (String) game.getOrDefault("pos1", "null");
+			String pos2 = (String) game.getOrDefault("pos2", "null");
+
+			Position start = null, end = null;
+			if(pos1 != null && end != null){
+				String[] pos = pos1.split(" ");
+				if(pos.length >= 4){
+					try{
+						Double x = Double.parseDouble(pos[0]);
+						Double y = Double.parseDouble(pos[1]);
+						Double z = Double.parseDouble(pos[2]);
+						String world = pos[3];
+
+						start = new Position(x, y, z, this.getServer().getLevelByName(world));
+					}catch(Exception e){}
+				}
+
+				pos = pos2.split(" ");
+				if(pos.length >= 4){
+					try{
+						Double x = Double.parseDouble(pos[0]);
+						Double y = Double.parseDouble(pos[1]);
+						Double z = Double.parseDouble(pos[2]);
+						String world = pos[3];
+
+						end = new Position(x, y, z, this.getServer().getLevelByName(world));
+					}catch(Exception e){}
+				}
+			}
+
+			if(end == null || start == null){
+				end = start = null;
+
+				this.getLogger().notice(this.getMessage("game.unlimitedWorld", key));
+			}
+
+			if(this.games.containsKey(game)){
+				this.initGame(type, new Position[]{
+					start, end
+				}, key, new ArrayList<Participant>());
+			}
+		}
 	}
 
 	@Override

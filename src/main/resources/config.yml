@@ -1,3 +1,6 @@
 language: eng
 join:
   random: true
+games:
+  one:
+    type: gunmatch
