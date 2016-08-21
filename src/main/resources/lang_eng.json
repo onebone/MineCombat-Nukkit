@@ -1,7 +1,8 @@
 {
 	"join.failed": "&2There is no game ongoing. Failed to join game.",
 	"game.unlimitedWorld": "{0} will have unlimited game field.",
-	"game.info": "&2{0}&f\n{1} / {2}",
-	"game.team.red": "&2RED&f",
+	"game.info.standby": "&eSTANDBY &2{0}&f\n{1} / {2}",
+	"game.info.ongoing": "&4ONGOING &2{0}&f\n{1} / {2}",
+	"game.team.red": "&4RED&f",
 	"game.team.blue": "&1BLUE&f"
 }

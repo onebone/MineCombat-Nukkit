@@ -17,9 +17,14 @@ public class GunMatch extends Game{
 		String[] teams = this.getTeams();
 
 		int time = this.getLeftTicks();
-		return this.plugin.getMessage("game.info",
-			teams[participant.getTeam()], (time <= 20*10 ? TextFormat.RED + "" + time : TextFormat.GREEN + "" + time) + TextFormat.WHITE,
-			this.getScoreString(participant));
+		
+		return this.getMode() == MineCombat.MODE_ONGOING ? 
+				this.plugin.getMessage("game.info.ongoing",
+				(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
+				teams[participant.getTeam()], this.getScoreString(participant))
+				: this.plugin.getMessage("game.info.standby",
+						(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
+						teams[participant.getTeam()], this.getScoreString(participant));
 	}
 
 	@Override

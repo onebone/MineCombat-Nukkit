@@ -54,7 +54,7 @@ public abstract class Game{
 		this.taskId = this.plugin.getServer().getScheduler().scheduleDelayedRepeatingTask(new PluginTask<MineCombat>(this.plugin){
 			public void onRun(int currentTick){
 				for(Participant player : Game.this.getParticipants()){
-					player.getPlayer().sendMessage(Game.this.getScoreMessage(player));
+					player.getPlayer().sendTip(Game.this.getScoreMessage(player));
 				}
 			}
 		}, 10, 10).getTaskId();
@@ -64,9 +64,20 @@ public abstract class Game{
 		String[] teams = this.getTeams();
 
 		int time = this.getLeftTicks();
-		return this.plugin.getMessage("game.info",
-			teams[participant.getTeam()], (time <= 20*10 ? TextFormat.RED + "" + time : TextFormat.GREEN + "" + time) + TextFormat.WHITE,
-			this.getScoreString(participant));
+		
+		return this.mode == MineCombat.MODE_ONGOING ? 
+			this.plugin.getMessage("game.info.ongoing",
+			(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
+			teams[participant.getTeam()], this.getScoreString(participant))
+			: this.plugin.getMessage("game.info.standby",
+					(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
+					teams[participant.getTeam()], this.getScoreString(participant));
+	}
+	
+	protected String getTimeString(int tick){
+		tick /= 20;
+		
+		return String.format("%02d", tick / 60) + ":" + String.format("%02d", tick % 60);
 	}
 
 	protected String getScoreString(Participant participant){
@@ -74,7 +85,7 @@ public abstract class Game{
 		for(int i = 0; i < this.score.length; i++){
 			if(i > 0) builder.append(" / ");
 			builder.append((i == participant.getTeam() ? TextFormat.GREEN : TextFormat.RED)
-					+ "" + score[i]);
+					+ "" + score[i] + TextFormat.WHITE);
 		}
 
 		return builder.toString();
@@ -87,25 +98,27 @@ public abstract class Game{
 	}
 
 	public int getLeftTicks(){
-		return this.getGameTime() - this.getElapsedTicks();
+		return this.mode == MineCombat.MODE_ONGOING ? 
+				this.getGameTime() - this.getElapsedTicks()
+				: this.getStandByTime() -  this.getElapsedTicks();
 	}
 
 	public int getElapsedTicks(){
-		return (int)((System.currentTimeMillis() - this.startTime) * 50);
+		return (int)((System.currentTimeMillis() - this.startTime) / 50);
 	}
 	
 	/**
 	 * @return Stand by time in tick. Returns <= 0 if none.
 	 */
 	public int getStandByTime(){
-		return 1200;
+		return 20 * 60; // 1 min
 	}
 
 	/**
 	 * @return Game time in tick. Returns <= 0 if unlimited.
 	 */
 	public int getGameTime(){
-		return 1200 * 15; // 15 min
+		return 20 * 60 * 15; // 15 min
 	}
 
 	public String[] getTeams(){
@@ -187,6 +200,7 @@ public abstract class Game{
 	
 	public final boolean _standBy(List<Participant> players){
 		if(this.standBy(players)){
+			this.startTime = System.currentTimeMillis();
 			this.mode = MineCombat.MODE_STANDBY;
 			
 			return true;

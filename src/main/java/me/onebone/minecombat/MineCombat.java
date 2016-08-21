@@ -25,6 +25,7 @@ import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.TextFormat;
 import cn.nukkit.utils.Utils;
 import me.onebone.minecombat.game.Game;
+import me.onebone.minecombat.game.GunMatch;
 
 public class MineCombat extends PluginBase implements Listener{
 	public static final int MODE_STANDBY = 0;
@@ -161,6 +162,11 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 	
 	@Override
+	public void onLoad(){
+		this.addGame("gunmatch", GunMatch.class);
+	}
+	
+	@Override
 	public void onEnable(){
 		this.saveDefaultConfig();
 
@@ -241,7 +247,7 @@ public class MineCombat extends PluginBase implements Listener{
 				this.getLogger().notice(this.getMessage("game.unlimitedWorld", key));
 			}
 
-			if(this.games.containsKey(game)){
+			if(this.games.containsKey(type)){
 				this.initGame(type, new Position[]{
 					start, end
 				}, key, new ArrayList<Participant>());
@@ -252,7 +258,7 @@ public class MineCombat extends PluginBase implements Listener{
 	@Override
 	public void onDisable(){
 		this.ongoing.values().forEach(container -> {
-			container.game.closeGame();
+			container.game._closeGame();
 		});
 		this.ongoing.clear();
 	}
@@ -275,7 +281,6 @@ public class MineCombat extends PluginBase implements Listener{
 	@EventHandler
 	public void onPlayerJoin(PlayerJoinEvent event){
 		Player player = event.getPlayer();
-		String username = player.getName().toLowerCase();
 
 		Participant participant = new Participant(player);
 
@@ -301,12 +306,12 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 	}
 	
-	public boolean addGame(Class<? extends Game> game){
-		if(this.games.containsKey(game.getName().toLowerCase())){
+	public boolean addGame(String name, Class<? extends Game> game){
+		if(this.games.containsKey(name.toLowerCase())){
 			return false;
 		}
 		
-		this.games.put(game.getName().toLowerCase(), game);
+		this.games.put(name.toLowerCase(), game);
 		return true;
 	}
 	
@@ -335,6 +340,13 @@ public class MineCombat extends PluginBase implements Listener{
 					@Override
 					public void onRun(int currentTick){
 						GameContainer.this.stopGame();
+						
+						if(game.getStandByTime() > 0){
+							if(!MineCombat.this.standBy(GameContainer.this, participants)){
+								game._closeGame();
+								MineCombat.this.ongoing.remove(game);
+							}
+						}
 					}
 				}, game.getGameTime()).getTaskId();
 
