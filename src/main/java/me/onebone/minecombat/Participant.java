@@ -6,6 +6,7 @@ import me.onebone.minecombat.game.Game;
 public class Participant{
 	private final Player player;
 	private Game joined = null;
+	private int team = -1;
 
 	public Participant(Player player){
 		this.player = player;
@@ -39,5 +40,13 @@ public class Participant{
 	
 	public Player getPlayer(){
 		return this.player;
+	}
+
+	public void setTeam(int team){
+		this.team = team;
+	}
+
+	public int getTeam(){
+		return this.team;
 	}
 }

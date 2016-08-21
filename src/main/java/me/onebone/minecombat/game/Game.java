@@ -6,6 +6,7 @@ import java.util.List;
 
 import cn.nukkit.level.Position;
 import cn.nukkit.scheduler.PluginTask;
+import cn.nukkit.utils.TextFormat;
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.Participant;
 
@@ -17,7 +18,8 @@ public abstract class Game{
 	private int[] score;
 	private int mode = MineCombat.MODE_STANDBY;
 	private final String name;
-	private int taskId;
+	private int taskId = -1;
+	private long startTime = 0;
 	
 	public Game(MineCombat plugin, String name, Position[] position){
 		this.plugin = plugin;
@@ -43,9 +45,37 @@ public abstract class Game{
 			}
 		}, 10, 10).getTaskId();
 	}
+
+	public String getScoreMessage(Participant participant){
+		int time = this.getLeftTicks();
+		return this.plugin.getMessage("game.info",
+			(time <= 20*10 ? TextFormat.RED + "" + time : TextFormat.GREEN + "" + time) + TextFormat.WHITE,
+			this.getScoreString(participant)); // TODO
+	}
+
+	private String getScoreString(Participant participant){
+		StringBuilder builder = new StringBuilder();
+		for(int i = 0; i < this.score.length; i++){
+			if(i > 0) builder.append(" / ");
+			builder.append((i == participant.getTeam() ? TextFormat.GREEN : TextFormat.RED)
+					+ "" + score[i]);
+		}
+
+		return builder.toString();
+	}
 	
 	public void cancelShowScore(){
-		this.plugin.getServer().getScheduler().cancelTask(taskId);
+		if(this.taskId >= 0 && this.plugin.getServer().getScheduler().isQueued(this.taskId)){
+			this.plugin.getServer().getScheduler().cancelTask(taskId);
+		}
+	}
+
+	public int getLeftTicks(){
+		return this.getGameTime() - this.getElapsedTicks();
+	}
+
+	public int getElapsedTicks(){
+		return (int)((System.currentTimeMillis() - this.startTime) * 50);
 	}
 	
 	/**
@@ -53,6 +83,13 @@ public abstract class Game{
 	 */
 	public int getStandByTime(){
 		return 1200;
+	}
+
+	/**
+	 * @return Game time in tick. Returns <= 0 if unlimited.
+	 */
+	public int getGameTime(){
+		return 1200 * 15; // 15 min
 	}
 	
 	public int getTeamCount(){
@@ -117,12 +154,34 @@ public abstract class Game{
 	
 	public final boolean _startGame(List<Participant> players){
 		if(this.startGame(players)){
+			this.startTime = System.currentTimeMillis();
 			this.mode = MineCombat.MODE_ONGOING;
 			
 			return true;
 		}
 		
 		return false;
+	}
+
+	/**
+	 * Called when time elasped
+	 *
+	 */
+	public abstract void stopGame();
+
+	public final void _stopGame(){
+		this.stopGame();
+
+		this.mode = MineCombat.MODE_STANDBY;
+	}
+
+	public abstract void closeGame();
+
+	public final void _closeGame(){
+		this.closeGame();
+
+		this.cancelShowScore();
+		this.mode = -1;
 	}
 	
 	/**

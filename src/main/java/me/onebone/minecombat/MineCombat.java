@@ -266,7 +266,21 @@ public class MineCombat extends PluginBase implements Listener{
 		 * @return
 		 */
 		public boolean startGame(List<Participant> participants){
-			return game._startGame(participants);
+			if(game._startGame(participants)){
+				this.taskId = MineCombat.this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(MineCombat.this){
+					@Override
+					public void onRun(int currentTick){
+						GameContainer.this.stopGame();
+					}
+				}, game.getGameTime()).getTaskId();
+
+				return true;
+			}
+			return false;
+		}
+
+		public void stopGame(){
+			game._stopGame();
 		}
 		
 		/**
