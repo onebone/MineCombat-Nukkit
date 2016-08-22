@@ -1,15 +1,30 @@
 package me.onebone.minecombat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.nukkit.Player;
 import me.onebone.minecombat.game.Game;
+import me.onebone.minecombat.weapon.Weapon;
 
 public class Participant{
 	private final Player player;
+	private List<Weapon> armed;
 	private Game joined = null;
 	private int team = 0;
 
 	public Participant(Player player){
 		this.player = player;
+		
+		armed = new ArrayList<>();
+	}
+	
+	public boolean armWeapon(Weapon weapon){
+		return this.armed.add(weapon);
+	}
+	
+	public boolean dearmWeapon(Weapon weapon){
+		return this.armed.remove(weapon);
 	}
 
 	public boolean joinGame(Game game){
