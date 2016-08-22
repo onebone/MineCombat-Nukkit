@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.TextFormat;
@@ -15,7 +16,7 @@ import me.onebone.minecombat.Participant;
 public abstract class Game{
 	protected MineCombat plugin;
 	
-	protected Position[] position;
+	protected Position[] position, spawns;
 	protected List<Participant> players = new ArrayList<>();
 	protected  Map<Integer, List<Participant>> teams = new HashMap<>();
 	
@@ -24,17 +25,20 @@ public abstract class Game{
 	private final String name;
 	private int taskId = -1;
 	private long startTime = 0;
+	
+	private int currentGame = 0;
 
 	/**
 	 * @param plugin
 	 * @param name		Name of game
 	 * @param position	Position of game field. `null` will given if unlimited.
 	 */
-	public Game(MineCombat plugin, String name, Position[] position){
+	public Game(MineCombat plugin, String name, Position[] position, Position[] spawns){
 		this.plugin = plugin;
 		
 		this.name = name;
 		this.position = position;
+		this.spawns = spawns;
 		
 		int count = this.getTeamCount();
 		this.score = new int[count];
@@ -132,6 +136,26 @@ public abstract class Game{
 		return this.mode == MineCombat.MODE_STANDBY || one.getTeam() == two.getTeam();
 	}
 	
+	public void respawnParticipant(PlayerRespawnEvent event, Participant player){
+		int team = player.getTeam();
+		
+		if(team >= 0 && team < this.spawns.length && this.spawns[team] != null){
+			event.setRespawnPosition(this.spawns[team]);
+		}
+	}
+	
+	public void respawnParticipant(Participant player){
+		int team = player.getTeam();
+		
+		if(team >= 0 && team < this.spawns.length && this.spawns[team] != null){
+			player.getPlayer().teleport(this.spawns[team]);
+		}
+	}
+	
+	public int getCurrentGame(){
+		return this.currentGame;
+	}
+	
 	protected void selectTeams(){
 		if(this.mode == MineCombat.MODE_STANDBY){
 			List<Participant> cloned = new ArrayList<Participant>(players);
@@ -213,6 +237,8 @@ public abstract class Game{
 		if(this.startGame(players)){
 			this.startTime = System.currentTimeMillis();
 			this.mode = MineCombat.MODE_ONGOING;
+			
+			this.currentGame++;
 			
 			return true;
 		}

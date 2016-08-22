@@ -16,9 +16,11 @@ import com.google.gson.reflect.TypeToken;
 import cn.nukkit.Player;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.player.PlayerJoinEvent;
+import cn.nukkit.event.player.PlayerLoginEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
+import cn.nukkit.event.player.PlayerRespawnEvent;
+import cn.nukkit.level.Level;
 import cn.nukkit.level.Position;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.PluginTask;
@@ -53,6 +55,8 @@ public class MineCombat extends PluginBase implements Listener{
 		if(player.getJoinedGame() != null){
 			return false;
 		}
+		
+		this.players.put(player.getPlayer().getName().toLowerCase(), player);
 
 		return player.joinGame(game);
 	}
@@ -65,10 +69,12 @@ public class MineCombat extends PluginBase implements Listener{
 	 * @return `true` if success, `false` if not
 	 */
 	public boolean leaveGame(Participant player){
+		this.players.remove(player);
+		
 		return player.leaveGame();
 	}
 
-	public boolean initGame(String name, Position[] position, String tag, final List<Participant> players){
+	public boolean initGame(String name, Position[] position, Position[] spawns, String tag, final List<Participant> players){
 		if(!games.containsKey(name)){
 			return false;
 		}
@@ -77,7 +83,7 @@ public class MineCombat extends PluginBase implements Listener{
 			position = null;
 		}
 		try{
-			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class).newInstance(this, tag, position);
+			Game game = (Game) games.get(name).getConstructor(MineCombat.class, String.class, Position[].class, Position[].class).newInstance(this, tag, position, spawns);
 			final GameContainer container = new GameContainer(game);
 	
 			if(game.getStandByTime() > 0){
@@ -204,6 +210,7 @@ public class MineCombat extends PluginBase implements Listener{
 		this.getServer().getPluginManager().registerEvents(this, this);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void startGames(){
 		Map<String, Map<String, Object>> list = this.getConfig().get("games", new LinkedHashMap<String, Map<String, Object>>());
 
@@ -223,8 +230,14 @@ public class MineCombat extends PluginBase implements Listener{
 						Double y = Double.parseDouble(pos[1]);
 						Double z = Double.parseDouble(pos[2]);
 						String world = pos[3];
-
-						start = new Position(x, y, z, this.getServer().getLevelByName(world));
+						
+						Level level = this.getServer().getLevelByName(world);
+						if(level == null){
+							this.getLogger().warning(this.getMessage("game.unlimitedWorld", key));
+						}else{
+							start = new Position(x, y, z, this.getServer().getLevelByName(world));
+						}
+						
 					}catch(Exception e){}
 				}
 
@@ -235,8 +248,13 @@ public class MineCombat extends PluginBase implements Listener{
 						Double y = Double.parseDouble(pos[1]);
 						Double z = Double.parseDouble(pos[2]);
 						String world = pos[3];
-
-						end = new Position(x, y, z, this.getServer().getLevelByName(world));
+						
+						Level level = this.getServer().getLevelByName(world);
+						if(level == null){
+							this.getLogger().warning(this.getMessage("game.unlimitedWorld", key));
+						}else{
+							end = new Position(x, y, z, level);
+						}
 					}catch(Exception e){}
 				}
 			}
@@ -246,11 +264,44 @@ public class MineCombat extends PluginBase implements Listener{
 
 				this.getLogger().notice(this.getMessage("game.unlimitedWorld", key));
 			}
+			
+			
+			List<String> temp = null;
+			try{
+				temp = (List<String>)game.getOrDefault("spawns", new ArrayList<String>());
+			}catch(ClassCastException e){
+				this.getLogger().warning(this.getMessage("game.invalidSpawn", key));
+			}
+			
+			Position[] spawns = null;
+			if(temp != null){
+				spawns = new Position[temp.size()];
+				
+				for(int i = 0; i < spawns.length; i++){
+					String[] pos = temp.get(i).split(" ");
+					if(pos.length >= 4){
+						try{
+							Double x = Double.parseDouble(pos[0]);
+							Double y = Double.parseDouble(pos[1]);
+							Double z = Double.parseDouble(pos[2]);
+							String world = pos[3];
+
+							Level level = this.getServer().getLevelByName(world);
+							if(level == null){
+								this.getLogger().warning(this.getMessage("game.invalidSpawnWorld", key));
+								continue;
+							}
+							spawns[i] = new Position(x, y, z, level);
+						}catch(Exception e){}
+					}
+				}
+			}
+			
 
 			if(this.games.containsKey(type)){
 				this.initGame(type, new Position[]{
 					start, end
-				}, key, new ArrayList<Participant>());
+				}, spawns, key, new ArrayList<Participant>());
 			}
 		}
 	}
@@ -279,7 +330,7 @@ public class MineCombat extends PluginBase implements Listener{
 	}
 
 	@EventHandler
-	public void onPlayerJoin(PlayerJoinEvent event){
+	public void onPlayerLogin(PlayerLoginEvent event){
 		Player player = event.getPlayer();
 
 		Participant participant = new Participant(player);
@@ -293,6 +344,17 @@ public class MineCombat extends PluginBase implements Listener{
 			}else{
 				player.sendMessage(this.getMessage("join.failed"));
 			}
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerRespawn(PlayerRespawnEvent event){
+		Player player = event.getPlayer();
+		String username = player.getName().toLowerCase();
+		
+		if(this.players.containsKey(username)){
+			Participant participant = this.players.get(username);
+			participant.getJoinedGame().respawnParticipant(event, participant);
 		}
 	}
 

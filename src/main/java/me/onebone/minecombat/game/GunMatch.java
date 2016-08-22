@@ -8,8 +8,8 @@ import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.Participant;
 
 public class GunMatch extends Game{
-	public GunMatch(MineCombat plugin, String name, Position[] position){
-		super(plugin, name, position);
+	public GunMatch(MineCombat plugin, String name, Position[] position, Position[] spawns){
+		super(plugin, name, position, spawns);
 	}
 	
 	@Override

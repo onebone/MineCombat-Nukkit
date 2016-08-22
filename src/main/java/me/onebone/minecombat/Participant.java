@@ -20,6 +20,7 @@ public class Participant{
 		if(this.joined == null){
 			game.addPlayer(this);
 			this.joined = game;
+			
 			return true;
 		}
 		return false;
