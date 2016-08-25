@@ -364,6 +364,7 @@ public class MineCombat extends PluginBase implements Listener{
 
 		String username = player.getName().toLowerCase();
 		if(players.containsKey(username)){
+			players.get(username).getJoinedGame().removePlayer(players.get(username));
 			players.remove(username);
 		}
 	}

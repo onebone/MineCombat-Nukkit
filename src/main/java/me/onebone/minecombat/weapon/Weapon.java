@@ -24,4 +24,9 @@ public abstract class Weapon{
 	 * @param entity	Entity which equipped player interacted with. 
 	 */
 	public abstract void attack(Entity entity);
+	
+	/**
+	 * Called when weapon is destroyed.
+	 */
+	public abstract void close();
 }

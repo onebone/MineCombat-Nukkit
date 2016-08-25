@@ -2,9 +2,6 @@ package me.onebone.minecombat.weapon;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
-import cn.nukkit.event.EventHandler;
-import cn.nukkit.event.Listener;
-import cn.nukkit.event.player.PlayerItemHeldEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.particle.DustParticle;
@@ -14,11 +11,11 @@ import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.Participant;
 import me.onebone.minecombat.event.EntityDamageByGunEvent;
 
-public abstract class Gun extends Weapon implements Listener{
+public abstract class Gun extends Weapon{
 	public static final int CAUSE_GUN = 15;
 	public static final int CAUSE_HEADSHOT = 16;
 	
-	protected boolean isShooting = false, unsetFire = false;
+	protected boolean isShooting = false;
 	protected Item gunItem = Item.get(Item.MELON_STEM);
 	
 	private ShootThread thr = null;
@@ -28,7 +25,8 @@ public abstract class Gun extends Weapon implements Listener{
 	public Gun(MineCombat plugin, Participant player, int loaded, int magazine){
 		super(plugin, player);
 		
-		this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
+		this.loaded = loaded;
+		this.magazine = magazine;
 		
 		this.thr = new ShootThread();
 		this.thr.start();
@@ -46,6 +44,9 @@ public abstract class Gun extends Weapon implements Listener{
 		return this.loaded;
 	}
 	
+	/**
+	 * @return Shoot interval in tick
+	 */
 	public int getShootInterval(){
 		return 20;
 	}
@@ -86,19 +87,6 @@ public abstract class Gun extends Weapon implements Listener{
 				&& player.getZ() - 1 < vec.getZ() && vec.getZ() < player.getZ() + 1);
 	}
 	
-	@EventHandler
-	public void onPlayerItemHeld(PlayerItemHeldEvent event){
-		Player player = event.getPlayer();
-		
-		if(this.getEquippedBy().getPlayer() == player){
-			if(event.getItem().equals(this.gunItem)){
-				this.isShooting = true;
-			}else{
-				this.isShooting = false;
-			}
-		}
-	}
-	
 	public boolean shoot(){
 		if(this.loaded <= 0){
 			if(this.reloadAmmo() == 0){
@@ -108,6 +96,8 @@ public abstract class Gun extends Weapon implements Listener{
 		
 		Player owner = this.getEquippedBy().getPlayer();
 		if(owner != null){
+			this.loaded--;
+			
 			Level level = owner.getLevel();
 			double _x = owner.getX();
 			double _y = owner.getY() + owner.getEyeHeight();
@@ -162,15 +152,13 @@ public abstract class Gun extends Weapon implements Listener{
 			while(true){
 				unfire:
 				while(Gun.this.isShooting){
-					if(!Gun.this.unsetFire){
-						if(!Gun.this.shoot()){
-							break unfire;
-						}
-						
-						try{
-							Thread.sleep(Gun.this.getShootInterval() * 50);
-						}catch(InterruptedException e){}
+					if(!Gun.this.shoot()){
+						break unfire;
 					}
+					
+					try{
+						Thread.sleep(Gun.this.getShootInterval() * 50);
+					}catch(InterruptedException e){}
 				}
 				try{
 					Thread.sleep(50);

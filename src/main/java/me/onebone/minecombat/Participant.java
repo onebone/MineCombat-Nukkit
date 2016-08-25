@@ -26,6 +26,10 @@ public class Participant{
 	public boolean dearmWeapon(Weapon weapon){
 		return this.armed.remove(weapon);
 	}
+	
+	public void dearmAll(){
+		this.armed.clear();
+	}
 
 	public boolean joinGame(Game game){
 		if(game == null){

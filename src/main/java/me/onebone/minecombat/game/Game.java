@@ -157,18 +157,35 @@ public abstract class Game{
 	}
 	
 	protected void selectTeams(){
-		if(this.mode == MineCombat.MODE_STANDBY){
-			List<Participant> cloned = new ArrayList<Participant>(players);
-			Collections.shuffle(cloned);
+		List<Participant> cloned = new ArrayList<Participant>(players);
+		Collections.shuffle(cloned);
 
-			int count = this.getTeamCount();
-			for(int i = 0; i < cloned.size(); i++){
-				Participant player = cloned.get(i);
-				player.setTeam(i % count);
-				
-				this.teams.get(i % count).add(player);
-			}
+		int count = this.getTeamCount();
+		for(int i = 0; i < cloned.size(); i++){
+			Participant player = cloned.get(i);
+			player.setTeam(i % count);
+			
+			this.teams.get(i % count).add(player);
 		}
+	}
+	
+	protected void selectTeam(Participant player){
+		int[] teams = new int[this.getTeamCount()];
+		
+		for(int i = 0; i < this.players.size(); i++){
+			teams[this.players.get(i).getTeam()]++;
+		}
+		
+		int min = teams[0], team = 0;
+        for (int i = 0; i < teams.length; i++) {
+            if (teams[i] < min) {
+                min = teams[i];
+                team = i;
+            }
+        }
+        
+        player.setTeam(team);
+        this.teams.get(team).add(player);
 	}
 	
 	public final int getTeamCount(){
@@ -297,12 +314,13 @@ public abstract class Game{
 	 * Called when player left the game
 	 * 
 	 * @param player
+	 * @return 
 	 */
-	public void removePlayer(Participant player){
-		players.remove(player);
-		
+	public boolean removePlayer(Participant player){		
 		if(this.mode == MineCombat.MODE_ONGOING){
 			this.teams.get(player.getTeam()).remove(player);
 		}
+		
+		return players.remove(player);
 	}
 }
