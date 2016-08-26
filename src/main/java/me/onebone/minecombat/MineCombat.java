@@ -14,8 +14,10 @@ import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerLoginEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
@@ -355,6 +357,20 @@ public class MineCombat extends PluginBase implements Listener{
 		if(this.players.containsKey(username)){
 			Participant participant = this.players.get(username);
 			participant.getJoinedGame().respawnParticipant(event, participant);
+		}
+	}
+	
+	@EventHandler
+	public void onPlayerDeath(PlayerDeathEvent event){
+		Entity entity = event.getEntity();
+		if(entity instanceof Player){
+			Player player = (Player) entity;
+			String username = player.getName().toLowerCase();
+			
+			if(this.players.containsKey(username)){
+				Participant participant = this.players.get(username);
+				participant.getJoinedGame().onParticipantKilled(event, participant);
+			}
 		}
 	}
 

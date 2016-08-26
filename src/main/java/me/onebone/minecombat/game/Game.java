@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.scheduler.PluginTask;
@@ -134,6 +135,10 @@ public abstract class Game{
 	
 	public boolean isColleague(Participant one, Participant two){
 		return this.mode == MineCombat.MODE_STANDBY || one.getTeam() == two.getTeam();
+	}
+	
+	public void onParticipantKilled(PlayerDeathEvent event, Participant participant){
+		
 	}
 	
 	public void respawnParticipant(PlayerRespawnEvent event, Participant player){

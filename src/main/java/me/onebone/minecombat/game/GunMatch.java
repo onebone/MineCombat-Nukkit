@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.utils.TextFormat;
 import me.onebone.minecombat.MineCombat;
@@ -34,6 +35,15 @@ public class GunMatch extends Game{
 				: this.plugin.getMessage("game.info.standby",
 						(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
 						teams[participant.getTeam()], this.getScoreString(participant));
+	}
+	
+	@Override
+	public void onParticipantKilled(PlayerDeathEvent event, Participant participant){
+		participant.getArmed().forEach(weapon -> {
+			if(weapon instanceof Gun){
+				((Gun) weapon).resetAmmo();
+			}
+		});
 	}
 
 	@Override
