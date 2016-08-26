@@ -8,10 +8,24 @@ public abstract class Weapon{
 	private Participant player;
 	protected MineCombat plugin;
 	
+	private boolean isHolding = false;
+	
 	public Weapon(MineCombat plugin, Participant player){
 		this.plugin = plugin;
 		
 		this.player = player;
+	}
+	
+	public void setHolding(boolean isHolding){
+		this.isHolding = isHolding;
+	}
+	
+	public void setHolding(){
+		this.setHolding(true);
+	}
+	
+	public boolean isHolding(){
+		return this.isHolding;
 	}
 	
 	public final Participant getEquippedBy(){

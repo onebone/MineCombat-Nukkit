@@ -28,8 +28,12 @@ public class AK47 extends Gun implements Listener{
 		
 		if(player == this.getEquippedBy().getPlayer()){
 			if(event.getItem().getId() == Item.MELON_STEM){
+				this.setHolding(true);
+				
 				this.isShooting = true;
 			}else{
+				this.setHolding(false);
+				
 				this.isShooting = false;
 			}
 		}
