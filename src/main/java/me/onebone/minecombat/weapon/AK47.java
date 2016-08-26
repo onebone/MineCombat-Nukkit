@@ -22,6 +22,11 @@ public class AK47 extends Gun implements Listener{
 		return 2;
 	}
 	
+	@Override
+	public String getName(){
+		return "AK47";
+	}
+	
 	@EventHandler
 	public void onPlayerItemHeld(PlayerItemHeldEvent event){
 		Player player = event.getPlayer();

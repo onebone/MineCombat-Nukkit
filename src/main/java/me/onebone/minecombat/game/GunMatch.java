@@ -28,13 +28,30 @@ public class GunMatch extends Game{
 
 		int time = this.getLeftTicks();
 		
+		Gun gun = null;
+		for(Weapon weapon : participant.getArmed()){
+			if(weapon instanceof Gun){
+				gun = (Gun) weapon;
+				break;
+			}
+		}
+		
+		String gunInfo = TextFormat.RED + "N/A" + TextFormat.WHITE;
+		if(gun != null){
+			int loaded = gun.getLoaded();
+			gunInfo = TextFormat.RED + gun.getName() + TextFormat.WHITE + " > " + 
+					(loaded < ((double) gun.getMaxLoaded() / 100D) ? 
+						TextFormat.RED + "" + loaded : TextFormat.GREEN + "" + loaded) + TextFormat.WHITE + " / " + TextFormat.YELLOW + gun.getMagazine() + TextFormat.WHITE;
+		}
+		
 		return this.getMode() == MineCombat.MODE_ONGOING ? 
-				this.plugin.getMessage("game.info.ongoing",
+				this.plugin.getMessage("gunmatch.info.ongoing",
 				(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
-				teams[participant.getTeam()], this.getScoreString(participant))
-				: this.plugin.getMessage("game.info.standby",
+				teams[participant.getTeam()], this.getScoreString(participant), gunInfo)
+				: this.plugin.getMessage("gunmatch.info.standby",
 						(time < 20*10 ? TextFormat.RED : TextFormat.GREEN) + "" + this.getTimeString(time) + TextFormat.WHITE,
-						teams[participant.getTeam()], this.getScoreString(participant));
+						teams[participant.getTeam()], this.getScoreString(participant),
+						gunInfo);
 	}
 	
 	@Override

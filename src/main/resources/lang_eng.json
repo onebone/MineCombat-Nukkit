@@ -5,6 +5,8 @@
 	"game.invalidSpawnWorld": "Invalid spawn world was given to {0}.",
 	"game.info.standby": "&eSTANDBY &2{0}&f\n{1} / {2}",
 	"game.info.ongoing": "&4ONGOING &2{0}&f\n{1} / {2}",
+	"gunmatch.info.standby": "&eSTANDBY &2{0}&f\n{1} / {2}\n{3}",
+	"gunmatch.info.ongoing": "&4ONGOING &2{0}&f\n{1} / {2}\n{3}",
 	"game.team.red": "&4RED&f",
 	"game.team.blue": "&1BLUE&f"
 }

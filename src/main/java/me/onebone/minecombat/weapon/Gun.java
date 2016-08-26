@@ -84,6 +84,8 @@ public abstract class Gun extends Weapon{
 		return 30;
 	}
 	
+	public abstract String getName();
+	
 	public boolean canHit(Vector3 vec, Participant participant){
 		Player player = participant.getPlayer();
 		

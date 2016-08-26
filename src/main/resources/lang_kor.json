@@ -3,6 +3,8 @@
 	"game.unlimitedWorld": "{0} 는 게임 필드로 모든 월드를 사용하게 됩니다.",
 	"game.info.standby": "&e대기 중 &2{0}&f\n{1} / {2}",
 	"game.info.ongoing": "&4진행 중 &2{0}&f\n{1} / {2}",
+	"gunmatch.info.standby": "&e대기 중 &2{0}&f\n{1} / {2}\n{3}",
+	"gunmatch.info.ongoing": "&4진행 중 &2{0}&f\n{1} / {2}\n{3}",
 	"game.team.red": "&4레드&f",
 	"game.team.blue": "&1블루&f"
 }
