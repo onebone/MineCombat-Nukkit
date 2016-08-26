@@ -23,6 +23,14 @@ public class Participant{
 		return this.armed.add(weapon);
 	}
 	
+	public void setArmed(List<Weapon> weapons){
+		this.armed = weapons;
+	}
+	
+	public List<Weapon> getArmed(){
+		return this.armed;
+	}
+	
 	public boolean dearmWeapon(Weapon weapon){
 		return this.armed.remove(weapon);
 	}

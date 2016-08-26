@@ -1,6 +1,5 @@
 package me.onebone.minecombat.event;
 
-import cn.nukkit.entity.Entity;
 import cn.nukkit.event.HandlerList;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import me.onebone.minecombat.Participant;

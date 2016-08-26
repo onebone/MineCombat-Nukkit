@@ -1,14 +1,22 @@
 package me.onebone.minecombat.game;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import cn.nukkit.level.Position;
 import cn.nukkit.utils.TextFormat;
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.Participant;
 import me.onebone.minecombat.weapon.AK47;
+import me.onebone.minecombat.weapon.Gun;
+import me.onebone.minecombat.weapon.Weapon;
 
 public class GunMatch extends Game{
+	private Map<String, List<Weapon>> weapons = new HashMap<>();
+	private Map<String, Integer> prevTeam = new HashMap<>();
+	
 	public GunMatch(MineCombat plugin, String name, Position[] position, Position[] spawns){
 		super(plugin, name, position, spawns);
 	}
@@ -30,6 +38,14 @@ public class GunMatch extends Game{
 
 	@Override
 	public boolean startGame(List<Participant> players){
+		for(Participant participant : players){
+			participant.getArmed().forEach(weapon -> {
+				if(weapon instanceof Gun){
+					((Gun) weapon).resetAmmo();
+				}
+			});
+		}
+		
 		return true;
 	}
 
@@ -42,8 +58,26 @@ public class GunMatch extends Game{
 	@Override
 	public boolean addPlayer(Participant player){
 		if(super.addPlayer(player)){
-			this.selectTeam(player);
-			player.armWeapon(new AK47(plugin, player));
+			String username = player.getPlayer().getName().toLowerCase();
+			
+			if(prevTeam.containsKey(username)){
+				int team = prevTeam.get(username);
+				
+				player.setTeam(team);
+				this.teams.get(team).add(player);
+				
+				this.prevTeam.remove(username);
+			}else{
+				this.selectTeam(player);
+			}
+			
+			if(weapons.containsKey(username)){
+				player.setArmed(this.weapons.get(username));
+				
+				weapons.remove(username);
+			}else{
+				player.armWeapon(new AK47(plugin, player));
+			}
 			
 			return true;
 		}
@@ -53,6 +87,9 @@ public class GunMatch extends Game{
 	@Override
 	public boolean removePlayer(Participant player){
 		if(super.removePlayer(player)){
+			this.weapons.put(player.getPlayer().getName().toLowerCase(), new ArrayList<Weapon>(player.getArmed()));
+			this.prevTeam.put(player.getPlayer().getName().toLowerCase(), player.getTeam());
+			
 			player.dearmAll();
 			
 			return true;
@@ -62,17 +99,15 @@ public class GunMatch extends Game{
 
 	@Override
 	public void stopGame(){
-		
+		prevTeam.clear();
+		weapons.clear();
 	}
 
 	@Override
-	public void closeGame(){
-		
-	}
+	public void closeGame(){}
 
 	@Override
 	public boolean onParticipantMove(Participant player){
-		return false;
+		return true;
 	}
-
 }

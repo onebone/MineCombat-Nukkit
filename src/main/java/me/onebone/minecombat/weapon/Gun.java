@@ -20,16 +20,24 @@ public abstract class Gun extends Weapon{
 	
 	private ShootThread thr = null;
 	
-	private int loaded, magazine;
+	private int loaded, magazine, defaultLoaded, defaultMagazine;
 	
 	public Gun(MineCombat plugin, Participant player, int loaded, int magazine){
 		super(plugin, player);
 		
-		this.loaded = loaded;
-		this.magazine = magazine;
+		this.defaultLoaded = this.loaded = loaded;
+		this.defaultMagazine = this.magazine = magazine;
 		
 		this.thr = new ShootThread();
 		this.thr.start();
+	}
+	
+	public int getLoaded(){
+		return this.loaded;
+	}
+	
+	public int getMagazine(){
+		return this.magazine;
 	}
 	
 	public int reloadAmmo(){
@@ -42,6 +50,11 @@ public abstract class Gun extends Weapon{
 		this.loaded += load;
 		
 		return this.loaded;
+	}
+	
+	public void resetAmmo(){
+		this.loaded = this.defaultLoaded;
+		this.magazine = this.defaultMagazine;
 	}
 	
 	/**
