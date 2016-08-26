@@ -244,8 +244,8 @@ public abstract class Game{
 	 */
 	public abstract boolean standBy(List<Participant> players);
 	
-	public final boolean _standBy(List<Participant> players){
-		if(this.standBy(players)){
+	public final boolean _standBy(){
+		if(this.standBy(this.players)){
 			this.startTime = System.currentTimeMillis();
 			this.mode = MineCombat.MODE_STANDBY;
 			
@@ -255,8 +255,8 @@ public abstract class Game{
 		return false;
 	}
 	
-	public final boolean _startGame(List<Participant> players){
-		if(this.startGame(players)){
+	public final boolean _startGame(){
+		if(this.startGame(this.players)){
 			this.startTime = System.currentTimeMillis();
 			this.mode = MineCombat.MODE_ONGOING;
 			

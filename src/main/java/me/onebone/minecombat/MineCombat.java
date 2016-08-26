@@ -89,7 +89,7 @@ public class MineCombat extends PluginBase implements Listener{
 			final GameContainer container = new GameContainer(game);
 	
 			if(game.getStandByTime() > 0){
-				if(this.standBy(container, players)){
+				if(this.standBy(container)){
 					this.ongoing.put(index++, container);
 					return true;
 				}
@@ -99,7 +99,7 @@ public class MineCombat extends PluginBase implements Listener{
 
 			this.ongoing.put(index++, container);
 			
-			return container.startGame(players);
+			return container.startGame();
 		}catch(Exception e){
 			return false;
 		}
@@ -120,12 +120,12 @@ public class MineCombat extends PluginBase implements Listener{
 		return false;
 	}
 
-	private boolean standBy(final GameContainer container, final List<Participant> players){
-		if(container.standBy(players)){
+	private boolean standBy(final GameContainer container){
+		if(container.standBy()){
 			container.taskId = this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(this){
 				public void onRun(int currentTick){
-					if(!container.startGame(players)){
-						MineCombat.this.standBy(container, players);
+					if(!container.startGame()){
+						MineCombat.this.standBy(container);
 					}
 				}
 			}, container.game.getStandByTime()).getTaskId();
@@ -413,15 +413,15 @@ public class MineCombat extends PluginBase implements Listener{
 		 * @param participants
 		 * @return
 		 */
-		public boolean startGame(List<Participant> participants){
-			if(game._startGame(participants)){
+		public boolean startGame(){
+			if(game._startGame()){
 				this.taskId = MineCombat.this.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(MineCombat.this){
 					@Override
 					public void onRun(int currentTick){
 						GameContainer.this.stopGame();
 						
 						if(game.getStandByTime() > 0){
-							if(!MineCombat.this.standBy(GameContainer.this, participants)){
+							if(!MineCombat.this.standBy(GameContainer.this)){
 								game._closeGame();
 								MineCombat.this.ongoing.remove(game);
 							}
@@ -443,8 +443,8 @@ public class MineCombat extends PluginBase implements Listener{
 		 * 
 		 * @return
 		 */
-		public boolean standBy(List<Participant> participants){
-			return game._standBy(participants);
+		public boolean standBy(){
+			return game._standBy();
 		}
 	}
 }
