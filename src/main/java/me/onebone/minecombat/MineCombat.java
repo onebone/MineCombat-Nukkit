@@ -385,13 +385,17 @@ public class MineCombat extends PluginBase implements Listener{
 		}
 	}
 	
-	public boolean addGame(String name, Class<? extends Game> game){
-		if(this.games.containsKey(name.toLowerCase())){
+	public boolean addGame(String name, Class<? extends Game> game, boolean force){
+		if(!force && this.games.containsKey(name.toLowerCase())){
 			return false;
 		}
 		
 		this.games.put(name.toLowerCase(), game);
 		return true;
+	}
+
+	public boolean addGame(String name, Class<? extends Game> game){
+		return this.addGame(name, game, false);
 	}
 	
 	private class GameContainer{
