@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import cn.nukkit.Player;
+import cn.nukkit.entity.Entity;
+import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.level.Position;
 import cn.nukkit.utils.TextFormat;
@@ -61,6 +65,19 @@ public class GunMatch extends Game{
 				((Gun) weapon).resetAmmo();
 			}
 		});
+		
+		if(this.getMode() == MineCombat.MODE_ONGOING){
+			EntityDamageEvent dev = event.getEntity().getLastDamageCause();
+			if(dev instanceof EntityDamageByEntityEvent){
+				Entity damager = ((EntityDamageByEntityEvent) dev).getDamager();
+				if(damager instanceof Player){
+					Participant cause = plugin.getParticipant((Player) damager);
+					if(!this.isColleague(cause, participant)){
+						this.addTeamScore(cause.getTeam());
+					}
+				}
+			}
+		}
 	}
 
 	@Override

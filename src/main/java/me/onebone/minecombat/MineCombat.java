@@ -47,6 +47,16 @@ public class MineCombat extends PluginBase implements Listener{
 	private boolean joinRandom = true;
 
 	/**
+	 * Returns participant instance by player instance
+	 *
+	 * @param player
+	 * @return
+	 */
+	public Participant getParticipant(Player player){
+		return this.players.get(player.getName().toLowerCase());
+	}
+
+	/**
 	 * Make player to join the game
 	 *
 	 * @param game
