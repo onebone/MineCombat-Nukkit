@@ -42,7 +42,6 @@ import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.EventPriority;
 import cn.nukkit.event.Listener;
-import cn.nukkit.event.TextContainer;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.inventory.InventoryPickupItemEvent;
@@ -56,6 +55,7 @@ import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.event.server.DataPacketSendEvent;
 import cn.nukkit.inventory.InventoryHolder;
 import cn.nukkit.item.Item;
+import cn.nukkit.lang.TextContainer;
 import cn.nukkit.level.Position;
 import cn.nukkit.network.protocol.SetEntityDataPacket;
 import cn.nukkit.plugin.PluginBase;
@@ -291,7 +291,7 @@ public class MineCombat extends PluginBase implements Listener{
 					
 					this.getServer().getOnlinePlayers().values().forEach((to) -> {
 						if(to.getId() == pk.eid){
-							pk.metadata.put(new StringEntityData(Entity.DATA_NAMETAG, (this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + to.getName()));
+							pk.metadata.put(new StringEntityData(Entity.DATA_NAMETAG, (this.isColleague(player.getName(), to.getName()) ? TextFormat.GREEN : TextFormat.RED) + "" + to.getName()));
 						}
 					});
 				}
@@ -492,8 +492,8 @@ public class MineCombat extends PluginBase implements Listener{
 			switch(this.status){
 			case STATUS_STOPPED:
 				player.sendPopup(PREPARE_FORMAT
-					.replace("%red", TextFormat.RED + scores[TEAM_RED] + TextFormat.WHITE)
-					.replace("%blue", TextFormat.BLUE + scores[TEAM_BLUE] + TextFormat.BLUE)
+					.replace("%red", TextFormat.RED + "" + scores[TEAM_RED] + TextFormat.WHITE)
+					.replace("%blue", TextFormat.BLUE + "" +scores[TEAM_BLUE] + TextFormat.BLUE)
 					.replace("%next", nextPos[0] + "")
 				);
 				break;
@@ -503,9 +503,9 @@ public class MineCombat extends PluginBase implements Listener{
 					StringBuilder killMessage = new StringBuilder();
 						for(String[] players : kills.keySet()){
 							killMessage.append(
-								(isColleague(players[0], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[0] + TextFormat.WHITE
+								(isColleague(players[0], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + ""+ players[0] + TextFormat.WHITE
 								+ (kills.get(players)[1] == CAUSE_GUN ? " -> " : " -HEAD>")
-								+ (isColleague(players[1], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + players[1] + TextFormat.WHITE + "\n"
+								+ (isColleague(players[1], player.getName()) ? TextFormat.GREEN : TextFormat.RED) + "" + players[1] + TextFormat.WHITE + "\n"
 							);
 						}
 						killMessage.substring(0, killMessage.length() - 1);
@@ -515,8 +515,8 @@ public class MineCombat extends PluginBase implements Listener{
 					PlayerContainer container = containers.get(player.getName());
 					
 					player.sendPopup(STATUS_FORMAT.replace("%team", container.getTeam() == TEAM_RED ? TextFormat.RED + "RED" + TextFormat.WHITE : TextFormat.BLUE + "BLUE" + TextFormat.WHITE)
-						.replace("%red", TextFormat.RED + scores[TEAM_RED] + TextFormat.WHITE)
-						.replace("%blue", TextFormat.BLUE + scores[TEAM_BLUE] + TextFormat.WHITE)
+						.replace("%red", TextFormat.RED + "" + scores[TEAM_RED] + TextFormat.WHITE)
+						.replace("%blue", TextFormat.BLUE + "" + scores[TEAM_BLUE] + TextFormat.WHITE)
 						.replace("%gun", container.getGun().getName())
 						.replace("%status", container.isShooting() ? TextFormat.RED + "FIRING" + TextFormat.WHITE : TextFormat.GREEN + "SAFETY" + TextFormat.WHITE)
 						.replace("%ammo", container.getGun().getAmmo() + "")
