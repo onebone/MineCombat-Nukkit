@@ -1,5 +1,8 @@
 package me.onebone.minecombat.weapon;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.item.Item;
@@ -18,9 +21,11 @@ public abstract class Gun extends Weapon{
 	protected boolean isShooting = false;
 	protected Item gunItem = Item.get(Item.MELON_STEM);
 	
-	private ShootThread thr = null;
-	
 	private int loaded, magazine, defaultLoaded, defaultMagazine;
+	
+	protected long lastShoot = 0;
+	
+	private static ShootThread thr = null;
 	
 	public Gun(MineCombat plugin, Participant player, int loaded, int magazine){
 		super(plugin, player);
@@ -28,8 +33,12 @@ public abstract class Gun extends Weapon{
 		this.defaultLoaded = this.loaded = loaded;
 		this.defaultMagazine = this.magazine = magazine;
 		
-		this.thr = new ShootThread();
-		this.thr.start();
+		if(thr == null){
+			thr = new ShootThread();
+			thr.start();
+		}
+		
+		thr.addGun(this);
 	}
 	
 	public int getLoaded(){
@@ -62,6 +71,10 @@ public abstract class Gun extends Weapon{
 	 */
 	public int getShootInterval(){
 		return 20;
+	}
+	
+	public boolean canShoot(){
+		return (System.currentTimeMillis() - this.lastShoot) > this.getShootInterval() * 50;
 	}
 	
 	public int getMaxLoaded(){
@@ -111,6 +124,7 @@ public abstract class Gun extends Weapon{
 		
 		Player owner = this.getEquippedBy().getPlayer();
 		if(owner != null){
+			this.lastShoot = System.currentTimeMillis();
 			this.loaded--;
 			
 			Level level = owner.getLevel();
@@ -161,23 +175,36 @@ public abstract class Gun extends Weapon{
 	@Override
 	public void attack(Entity entity){}
 	
-	public class ShootThread extends Thread{
+	@Override
+	public void close(){
+		thr.removeGun(this);
+	}
+	
+	private class ShootThread extends Thread{
+		public List<Gun> guns = new ArrayList<>();
+		
+		public void addGun(Gun gun){
+			guns.add(gun);
+		}
+		
+		public boolean removeGun(Gun gun){
+			return guns.remove(gun);
+		}
+		
 		@Override
 		public void run(){
 			while(true){
-				unfire:
-				while(Gun.this.isShooting){
-					if(!Gun.this.shoot()){
-						break unfire;
+				for(Gun gun : guns){
+					if(gun.isShooting && gun.canShoot()){
+						gun.shoot();
 					}
-					
-					try{
-						Thread.sleep(Gun.this.getShootInterval() * 50);
-					}catch(InterruptedException e){}
 				}
+				
 				try{
 					Thread.sleep(50);
-				}catch(InterruptedException e){}
+				}catch(InterruptedException e){
+					
+				}
 			}
 		}
 	}
