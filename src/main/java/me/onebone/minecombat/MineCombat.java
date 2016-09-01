@@ -15,6 +15,7 @@ import com.google.gson.reflect.TypeToken;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerDeathEvent;
@@ -22,8 +23,10 @@ import cn.nukkit.event.player.PlayerLoginEvent;
 import cn.nukkit.event.player.PlayerMoveEvent;
 import cn.nukkit.event.player.PlayerQuitEvent;
 import cn.nukkit.event.player.PlayerRespawnEvent;
+import cn.nukkit.event.server.DataPacketSendEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Position;
+import cn.nukkit.network.protocol.SetEntityDataPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.TextFormat;
@@ -367,6 +370,39 @@ public class MineCombat extends PluginBase implements Listener{
 		if(this.players.containsKey(username)){
 			Participant participant = this.players.get(username);
 			participant.getJoinedGame().respawnParticipant(event, participant);
+		}
+	}
+	
+	@EventHandler
+	public void onDataPacketSend(DataPacketSendEvent event){
+		if(event.getPacket() instanceof SetEntityDataPacket){
+			SetEntityDataPacket pk = (SetEntityDataPacket) event.getPacket();
+			
+			if(pk.eid != 0){
+				Player player = event.getPlayer();
+				
+				Participant participant = this.getParticipant(player);
+				if(participant != null){
+					for(Player p : this.getServer().getOnlinePlayers().values()){
+						if(p.getId() == pk.eid){
+							Participant of = this.getParticipant(p);
+							
+							if(of != null){
+								if(participant.getJoinedGame() == of.getJoinedGame()){
+									String tag = participant.getJoinedGame().onSetNameTag(participant, of);
+									System.out.println(tag);
+									pk.metadata.put(
+										new StringEntityData(Entity.DATA_NAMETAG,
+										tag)
+									);
+								}
+							}
+							
+							break;
+						}
+					}
+				}
+			}
 		}
 	}
 	

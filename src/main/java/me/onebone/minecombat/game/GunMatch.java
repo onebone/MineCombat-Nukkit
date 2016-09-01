@@ -107,8 +107,7 @@ public class GunMatch extends Game{
 			if(prevTeam.containsKey(username)){
 				int team = prevTeam.get(username);
 				
-				player.setTeam(team);
-				this.teams.get(team).add(player);
+				this.setPlayerTeam(player, team);
 				
 				this.prevTeam.remove(username);
 			}else{

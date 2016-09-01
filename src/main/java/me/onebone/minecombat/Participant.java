@@ -45,8 +45,8 @@ public class Participant{
 		}
 		
 		if(this.joined == null){
-			game.addPlayer(this);
 			this.joined = game;
+			game.addPlayer(this);
 			
 			return true;
 		}
