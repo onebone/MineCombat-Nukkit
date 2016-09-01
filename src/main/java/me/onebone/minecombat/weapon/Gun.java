@@ -102,7 +102,7 @@ public abstract class Gun extends Weapon{
 	public boolean canHit(Vector3 vec, Participant participant){
 		Player player = participant.getPlayer();
 		
-		return (!this.getEquippedBy().getJoinedGame().isColleague(participant, this.getEquippedBy())) && (player.getX() - 1 < vec.getX() && vec.getX() < player.getX() + 1
+		return !this.getEquippedBy().getJoinedGame().isColleague(participant, this.getEquippedBy()) && (player.getX() - 1 < vec.getX() && vec.getX() < player.getX() + 1
 				&& player.getY() < vec.getY() && vec.getY() < player.getY() + player.getHeight()
 				&& player.getZ() - 1 < vec.getZ() && vec.getZ() < player.getZ() + 1);
 	}
@@ -139,7 +139,7 @@ public abstract class Gun extends Weapon{
 			pk.radius = 0.1F;
 			pk.records = new Vector3[]{};
 			Participant[] players = this.getEquippedBy().getJoinedGame().getParticipants().stream().filter(participant -> {
-				if(this.getEquippedBy().getPlayer().getLevel().getPlayers().containsValue(participant)){
+				if(this.getEquippedBy().getPlayer().getLevel().getPlayers().containsValue(participant.getPlayer())){
 					participant.getPlayer().dataPacket(pk);
 					return true;
 				}
@@ -163,7 +163,7 @@ public abstract class Gun extends Weapon{
 						if(this.isHeadshot(vec, player)){
 							player.getPlayer().attack(new EntityDamageByGunEvent(this.getEquippedBy(), player, Gun.CAUSE_HEADSHOT, this.getHeadshotDamage((owner.distance(player.getPlayer())))));
 						}else{
-							player.getPlayer().attack(new EntityDamageByGunEvent(this.getEquippedBy(), player, Gun.CAUSE_GUN, this.getHitDamage(owner.distance(player.getPlayer()))));
+							player.getPlayer().attack(new EntityDamageByGunEvent(this.getEquippedBy(), player, Gun.CAUSE_GUN, this.getShotDamage(owner.distance(player.getPlayer()))));
 						}
 					}
 				}
