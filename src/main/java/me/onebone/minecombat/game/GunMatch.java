@@ -85,10 +85,12 @@ public class GunMatch extends Game{
 					if(!this.isColleague(cause, participant)){
 						this.addTeamScore(cause.getTeam());
 					}
+					
+					this.addMessage(new KillNotice(cause.getPlayer().getName(), cause.getTeam(), participant.getPlayer().getName(), participant.getTeam()));
 				}
 			}
 		}
-		
+				
 		event.setDeathMessage("");
 		event.setKeepInventory(true);
 		

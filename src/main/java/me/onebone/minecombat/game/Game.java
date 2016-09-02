@@ -3,6 +3,8 @@ package me.onebone.minecombat.game;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +22,8 @@ public abstract class Game {
 	protected Position[] position, spawns;
 	protected List<Participant> players = new ArrayList<>();
 	protected Map<Integer, List<Participant>> teams = new HashMap<>();
+	
+	private List<KillNotice> messages = new LinkedList<>();
 
 	private int[] score;
 	private int mode = MineCombat.MODE_STANDBY;
@@ -56,6 +60,10 @@ public abstract class Game {
 	public String getName() {
 		return this.name;
 	}
+	
+	public void addMessage(KillNotice notice){
+		this.messages.add(notice);
+	}
 
 	public void showScore() {
 		this.taskId = this.plugin.getServer().getScheduler()
@@ -63,6 +71,20 @@ public abstract class Game {
 					public void onRun(int currentTick) {
 						for (Participant player : Game.this.getParticipants()) {
 							player.getPlayer().sendTip(Game.this.getScoreMessage(player));
+							
+							StringBuilder builder = new StringBuilder();
+							Iterator<KillNotice> itr = Game.this.messages.iterator();
+							while(itr.hasNext()){
+								KillNotice msg = itr.next();
+								
+								if(msg.isExpired()){
+									itr.remove();
+									continue;
+								}
+								builder.append(msg.compose(player.getTeam()) + "\n");
+							}
+							
+							player.getPlayer().sendPopup(builder.toString());
 						}
 					}
 				}, 10, 10).getTaskId();
