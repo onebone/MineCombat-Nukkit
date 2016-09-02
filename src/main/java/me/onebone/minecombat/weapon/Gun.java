@@ -18,7 +18,7 @@ public abstract class Gun extends Weapon{
 	public static final int CAUSE_GUN = 15;
 	public static final int CAUSE_HEADSHOT = 16;
 	
-	protected boolean isShooting = false;
+	public boolean isShooting = false;
 	protected Item gunItem = Item.get(Item.MELON_STEM);
 	
 	private int loaded, magazine, defaultLoaded, defaultMagazine;
@@ -71,6 +71,10 @@ public abstract class Gun extends Weapon{
 	 */
 	public int getShootInterval(){
 		return 20;
+	}
+	
+	public boolean isShooting(){
+		return this.isShooting;
 	}
 	
 	public boolean canShoot(){

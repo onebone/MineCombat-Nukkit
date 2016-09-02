@@ -72,6 +72,7 @@ public class GunMatch extends Game{
 		participant.getArmed().forEach(weapon -> {
 			if(weapon instanceof Gun){
 				((Gun) weapon).resetAmmo();
+				((Gun) weapon).isShooting = false;
 			}
 		});
 		
@@ -146,6 +147,12 @@ public class GunMatch extends Game{
 	@Override
 	public boolean removePlayer(Participant player){
 		if(super.removePlayer(player)){
+			player.getArmed().forEach(weapon -> {
+				if(weapon instanceof Gun){
+					((Gun) weapon).setHolding(false);
+					((Gun) weapon).isShooting = false;
+				}
+			});
 			this.weapons.put(player.getPlayer().getName().toLowerCase(), new ArrayList<Weapon>(player.getArmed()));
 			this.prevTeam.put(player.getPlayer().getName().toLowerCase(), player.getTeam());
 			
