@@ -286,6 +286,8 @@ public abstract class Game {
 			this.mode = MineCombat.MODE_ONGOING;
 
 			for (Participant to : this.players) {
+				this.respawnParticipant(to);
+				
 				for (Participant of : this.players) {
 					if (to != of) {
 						to.getPlayer().sendData(of.getPlayer());
