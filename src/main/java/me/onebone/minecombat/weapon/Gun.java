@@ -198,10 +198,14 @@ public abstract class Gun extends Weapon{
 		@Override
 		public void run(){
 			while(true){
-				for(Gun gun : guns){
-					if(gun.isShooting && gun.canShoot()){
-						gun.shoot();
+				try{
+					for(Gun gun : guns){
+						if(gun.isShooting && gun.canShoot()){
+							gun.shoot();
+						}
 					}
+				}catch(Exception e){
+					// ignore
 				}
 				
 				try{
