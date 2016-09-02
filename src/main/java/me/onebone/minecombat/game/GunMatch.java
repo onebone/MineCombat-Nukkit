@@ -8,6 +8,9 @@ import java.util.Map;
 import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.event.entity.EntityDamageEvent;
+import cn.nukkit.event.inventory.InventoryPickupItemEvent;
+import cn.nukkit.event.EventHandler;
+import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
 import cn.nukkit.item.Item;
@@ -19,12 +22,33 @@ import me.onebone.minecombat.weapon.AK47;
 import me.onebone.minecombat.weapon.Gun;
 import me.onebone.minecombat.weapon.Weapon;
 
-public class GunMatch extends Game{
+public class GunMatch extends Game implements Listener{
 	private Map<String, List<Weapon>> weapons = new HashMap<>();
 	private Map<String, Integer> prevTeam = new HashMap<>();
 	
 	public GunMatch(MineCombat plugin, String name, Position[] position, Position[] spawns){
 		super(plugin, name, position, spawns);
+		
+		plugin.getServer().getPluginManager().registerEvents(this, plugin);
+	}
+	
+	@EventHandler
+	public void onItemPickup(InventoryPickupItemEvent event){
+		if(event.getItem().getItem().getId() == Item.MELON_STEM && event.getInventory().getHolder() instanceof Player){
+			Player player = (Player) event.getInventory().getHolder();
+			
+			Participant participant = plugin.getParticipant(player);
+			if(participant != null && participant.getJoinedGame() == this){
+				participant.getArmed().forEach((weapon) -> {
+					if(weapon instanceof Gun){
+						((Gun) weapon).addMagazine(((Gun) weapon).getDefaultLoaded());
+					}
+				});
+			}
+		}
+		
+		event.setCancelled();
+		event.getItem().kill();
 	}
 	
 	@Override
@@ -93,6 +117,7 @@ public class GunMatch extends Game{
 				
 		event.setDeathMessage("");
 		event.setKeepInventory(true);
+		event.getEntity().getLevel().dropItem(event.getEntity(), new Item(Item.MELON_STEM));
 		
 		this.giveItem(participant);
 	}
