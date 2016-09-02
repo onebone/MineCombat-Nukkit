@@ -392,8 +392,7 @@ public class MineCombat extends PluginBase implements Listener{
 									String tag = participant.getJoinedGame().onSetNameTag(participant, of);
 									
 									pk.metadata.put(
-										new StringEntityData(Entity.DATA_NAMETAG,
-										tag)
+										new StringEntityData(Entity.DATA_NAMETAG, tag)
 									);
 								}
 							}

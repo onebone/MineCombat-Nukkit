@@ -10,6 +10,7 @@ import cn.nukkit.entity.Entity;
 import cn.nukkit.event.entity.EntityDamageEvent;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
+import cn.nukkit.item.Item;
 import cn.nukkit.level.Position;
 import cn.nukkit.utils.TextFormat;
 import me.onebone.minecombat.MineCombat;
@@ -58,6 +59,14 @@ public class GunMatch extends Game{
 						gunInfo);
 	}
 	
+	private void giveItem(Participant participant){
+		participant.getPlayer().getInventory().clearAll();
+		participant.getPlayer().getInventory().addItem(new Item(Item.MELON_STEM));
+		participant.getPlayer().getInventory().setHeldItemSlot(
+			participant.getPlayer().getInventory().first(new Item(Item.MELON_STEM))
+		);
+	}
+	
 	@Override
 	public void onParticipantKilled(PlayerDeathEvent event, Participant participant){
 		participant.getArmed().forEach(weapon -> {
@@ -78,6 +87,11 @@ public class GunMatch extends Game{
 				}
 			}
 		}
+		
+		event.setDeathMessage("");
+		event.setKeepInventory(true);
+		
+		this.giveItem(participant);
 	}
 
 	@Override
@@ -102,6 +116,8 @@ public class GunMatch extends Game{
 	@Override
 	public boolean addPlayer(Participant player){
 		if(super.addPlayer(player)){
+			this.giveItem(player);
+			
 			String username = player.getPlayer().getName().toLowerCase();
 			
 			if(prevTeam.containsKey(username)){
