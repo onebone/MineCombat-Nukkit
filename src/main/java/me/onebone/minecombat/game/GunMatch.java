@@ -143,10 +143,19 @@ public class GunMatch extends Game implements Listener{
 	
 	@Override
 	public boolean addPlayer(Participant player){
+		String username = player.getPlayer().getName().toLowerCase();
+		
+		if(weapons.containsKey(username)){
+			player.setArmed(this.weapons.get(username));
+		}else{
+			player.armWeapon(new AK47(plugin, player));
+		}
+		
 		if(super.addPlayer(player)){
-			this.giveItem(player);
+
+			weapons.remove(username);
 			
-			String username = player.getPlayer().getName().toLowerCase();
+			this.giveItem(player);
 			
 			if(prevTeam.containsKey(username)){
 				int team = prevTeam.get(username);
@@ -156,14 +165,6 @@ public class GunMatch extends Game implements Listener{
 				this.prevTeam.remove(username);
 			}else{
 				this.selectTeam(player);
-			}
-			
-			if(weapons.containsKey(username)){
-				player.setArmed(this.weapons.get(username));
-				
-				weapons.remove(username);
-			}else{
-				player.armWeapon(new AK47(plugin, player));
 			}
 			
 			this.sendNameTag(player);

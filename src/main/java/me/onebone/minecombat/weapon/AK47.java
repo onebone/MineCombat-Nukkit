@@ -31,7 +31,7 @@ public class AK47 extends Gun implements Listener{
 	public void onPlayerItemHeld(PlayerItemHeldEvent event){
 		Player player = event.getPlayer();
 		
-		if(player == this.getEquippedBy().getPlayer()){
+		if(player == this.getHolder().getPlayer()){
 			if(event.getItem().getId() == Item.MELON_STEM){
 				this.setHolding(true);
 			}else{
@@ -45,11 +45,25 @@ public class AK47 extends Gun implements Listener{
 	public void onPlayerInteract(PlayerInteractEvent event){
 		Player player = event.getPlayer();
 		
-		if(player == this.getEquippedBy().getPlayer()){
+		if(player == this.getHolder().getPlayer()){
 			if(event.getItem().getId() == Item.MELON_STEM){
 				this.isShooting = !this.isShooting;
 			}
 		}
+	}
+	
+	@Override
+	public void pause(){
+		HandlerList.unregisterAll(this);
+		
+		super.pause();
+	}
+	
+	@Override
+	public void resume(){
+		this.plugin.getServer().getPluginManager().registerEvents(this, plugin);
+		
+		super.resume();
 	}
 	
 	@Override

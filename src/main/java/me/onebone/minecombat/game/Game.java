@@ -15,6 +15,7 @@ import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.TextFormat;
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.Participant;
+import me.onebone.minecombat.weapon.Weapon;
 
 public abstract class Game {
 	protected MineCombat plugin;
@@ -344,7 +345,7 @@ public abstract class Game {
 
 	public final void _stopGame() {
 		this.stopGame();
-
+		
 		this.teams.values().forEach(l -> l.clear());
 
 		this.mode = MineCombat.MODE_STANDBY;
@@ -377,7 +378,15 @@ public abstract class Game {
 	 */
 	public boolean addPlayer(Participant player) {
 		players.add(player);
-
+		
+		player.getArmed().forEach(weapon -> {
+			if(weapon.getStatus() == Weapon.STATUS_PAUSED){
+				weapon.setHolder(player);
+				
+				weapon.resume();
+			}
+		});
+		
 		return true;
 	}
 
@@ -391,6 +400,12 @@ public abstract class Game {
 		if (this.mode == MineCombat.MODE_ONGOING) {
 			this.teams.get(player.getTeam()).remove(player);
 		}
+		
+		player.getArmed().forEach(weapon -> {
+			if(weapon.getStatus() == Weapon.STATUS_WORKING){
+				weapon.pause();
+			}
+		});
 
 		return players.remove(player);
 	}

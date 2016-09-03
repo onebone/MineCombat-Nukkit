@@ -24,11 +24,11 @@ public class Participant{
 	}
 	
 	public void setArmed(List<Weapon> weapons){
-		this.armed = weapons;
+		this.armed = new ArrayList<Weapon>(weapons);
 	}
 	
 	public List<Weapon> getArmed(){
-		return this.armed;
+		return new ArrayList<Weapon>(this.armed);
 	}
 	
 	public boolean dearmWeapon(Weapon weapon){

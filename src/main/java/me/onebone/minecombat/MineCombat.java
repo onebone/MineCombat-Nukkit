@@ -70,8 +70,6 @@ public class MineCombat extends PluginBase implements Listener{
 		if(player.getJoinedGame() != null){
 			return false;
 		}
-		
-		this.players.put(player.getPlayer().getName().toLowerCase(), player);
 
 		return player.joinGame(game);
 	}
@@ -349,6 +347,7 @@ public class MineCombat extends PluginBase implements Listener{
 		Player player = event.getPlayer();
 
 		Participant participant = new Participant(player);
+		this.players.put(player.getName().toLowerCase(), participant);
 
 		if(this.joinRandom){
 			if(this.ongoing.size() > 0){
@@ -425,7 +424,10 @@ public class MineCombat extends PluginBase implements Listener{
 
 		String username = player.getName().toLowerCase();
 		if(players.containsKey(username)){
-			players.get(username).getJoinedGame().removePlayer(players.get(username));
+			Game game;
+			if((game = players.get(username).getJoinedGame()) != null){
+				game.removePlayer(players.get(username));
+			}
 			players.remove(username);
 		}
 	}
