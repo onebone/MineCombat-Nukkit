@@ -184,16 +184,15 @@ public abstract class Game {
 		int team = player.getTeam();
 
 		if (team >= 0 && team < this.spawns.length && this.spawns[team] != null) {
-			event.setRespawnPosition(this.spawns[team]);
+			if(event != null){
+				event.setRespawnPosition(this.spawns[team]);
+			}
+			player.getPlayer().setSpawn(this.spawns[team]);
 		}
 	}
 
 	public void respawnParticipant(Participant player) {
-		int team = player.getTeam();
-
-		if (team >= 0 && team < this.spawns.length && this.spawns[team] != null) {
-			player.getPlayer().teleport(this.spawns[team]);
-		}
+		this.respawnParticipant(null, player);
 	}
 
 	public int getCurrentGame() {
