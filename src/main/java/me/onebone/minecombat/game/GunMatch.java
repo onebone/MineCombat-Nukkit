@@ -166,6 +166,8 @@ public class GunMatch extends Game implements Listener{
 				player.armWeapon(new AK47(plugin, player));
 			}
 			
+			this.sendNameTag(player);
+			
 			return true;
 		}
 		return false;

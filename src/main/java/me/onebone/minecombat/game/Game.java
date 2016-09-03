@@ -198,6 +198,15 @@ public abstract class Game {
 	public int getCurrentGame() {
 		return this.currentGame;
 	}
+	
+	protected void sendNameTag(Participant player){
+		for (Participant participant : this.players) {
+			if (participant != player) {
+				player.getPlayer().sendData(participant.getPlayer());
+				participant.getPlayer().sendData(player.getPlayer());
+			}
+		}
+	}
 
 	protected void selectTeams() {
 		List<Participant> cloned = new ArrayList<Participant>(players);
@@ -368,13 +377,6 @@ public abstract class Game {
 	 */
 	public boolean addPlayer(Participant player) {
 		players.add(player);
-
-		for (Participant participant : this.players) {
-			if (participant != player) {
-				player.getPlayer().sendData(participant.getPlayer());
-				participant.getPlayer().sendData(player.getPlayer());
-			}
-		}
 
 		return true;
 	}
