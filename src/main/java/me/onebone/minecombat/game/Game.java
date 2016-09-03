@@ -316,6 +316,8 @@ public abstract class Game {
 					}
 				}
 			}
+			
+			this.resetScores();
 
 			this.currentGame++;
 
