@@ -138,6 +138,8 @@ public class GunMatch extends Game implements Listener{
 	@Override
 	public boolean standBy(List<Participant> players){
 		this.selectTeams();
+		
+		this.sendNameTagAll();
 		return true;
 	}
 	

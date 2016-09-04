@@ -17,7 +17,6 @@ import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
 import cn.nukkit.entity.data.EntityData;
 import cn.nukkit.entity.data.EntityMetadata;
-import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.player.PlayerDeathEvent;
@@ -28,6 +27,7 @@ import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.event.server.DataPacketSendEvent;
 import cn.nukkit.level.Level;
 import cn.nukkit.level.Position;
+import cn.nukkit.network.protocol.AddPlayerPacket;
 import cn.nukkit.network.protocol.SetEntityDataPacket;
 import cn.nukkit.plugin.PluginBase;
 import cn.nukkit.scheduler.PluginTask;
@@ -382,20 +382,41 @@ public class MineCombat extends PluginBase implements Listener{
 			if(pk.eid != 0){
 				Player player = event.getPlayer();
 				
-				Participant participant = this.getParticipant(player);
+				final Participant participant = this.getParticipant(player);
 				if(participant != null && participant.getJoinedGame() != null){
 					for(Participant of : participant.getJoinedGame().getParticipants()){
 						if(of.getPlayer().getId() == pk.eid){
-							if(participant.getJoinedGame() == of.getJoinedGame()){
-								String tag = participant.getJoinedGame().onSetNameTag(participant, of);
-								
-								pk.metadata.put(
-									new StringEntityData(Entity.DATA_NAMETAG, tag)
-								);
-							}
+							final String tag = participant.getJoinedGame().onSetNameTag(participant, of);
 							
+							Map<Integer, EntityData> map = pk.metadata.getMap();
+							
+							pk.metadata = new EntityMetadata();
+							map.forEach((k,v)->pk.metadata.put(v));
+							
+							pk.metadata.putString(Entity.DATA_NAMETAG, tag);
 							break;
 						}
+					}
+				}
+			}
+		}else if(event.getPacket() instanceof AddPlayerPacket){
+			Player player = event.getPlayer();
+			
+			AddPlayerPacket pk = (AddPlayerPacket) event.getPacket();
+			
+			final Participant participant = this.getParticipant(player);
+			if(participant != null && participant.getJoinedGame() != null){
+				for(Participant of : participant.getJoinedGame().getParticipants()){
+					if(of.getPlayer().getId() == pk.eid){
+						final String tag = participant.getJoinedGame().onSetNameTag(participant, of);
+						
+						Map<Integer, EntityData> map = pk.metadata.getMap();
+						
+						pk.metadata = new EntityMetadata();
+						map.forEach((k,v)->pk.metadata.put(v));
+						
+						pk.metadata.putString(Entity.DATA_NAMETAG, tag);
+						break;
 					}
 				}
 			}

@@ -176,8 +176,8 @@ public abstract class Game {
 	 * @return name
 	 */
 	public String onSetNameTag(Participant to, Participant of) {
-		return this.mode == MineCombat.MODE_STANDBY ? TextFormat.YELLOW + of.getPlayer().getName()
-				: (this.isColleague(to, of) ? TextFormat.GREEN : TextFormat.RED) + of.getPlayer().getName();
+		return (this.mode == MineCombat.MODE_STANDBY ? TextFormat.YELLOW
+				: (this.isColleague(to, of) ? TextFormat.GREEN : TextFormat.RED)) + of.getPlayer().getName();
 	}
 
 	public void respawnParticipant(PlayerRespawnEvent event, Participant player) {
@@ -206,6 +206,19 @@ public abstract class Game {
 				participant.getPlayer().sendData(player.getPlayer());
 			}
 		}
+	}
+	
+	protected void sendNameTagAll(){
+		for (Participant to : this.players) {
+			this.respawnParticipant(to);
+			
+			for (Participant of : this.players) {
+				if (to != of) {
+					to.getPlayer().sendData(of.getPlayer());
+				}
+			}
+		}
+		
 	}
 
 	protected void selectTeams() {
@@ -238,8 +251,7 @@ public abstract class Game {
 			}
 		}
 
-		player.setTeam(team);
-		this.teams.get(team).add(player);
+		this.setPlayerTeam(player, team);
 	}
 	
 	public void setPlayerTeam(Participant participant, int team){
@@ -318,15 +330,7 @@ public abstract class Game {
 			this.startTime = System.currentTimeMillis();
 			this.mode = MineCombat.MODE_ONGOING;
 
-			for (Participant to : this.players) {
-				this.respawnParticipant(to);
-				
-				for (Participant of : this.players) {
-					if (to != of) {
-						to.getPlayer().sendData(of.getPlayer());
-					}
-				}
-			}
+			this.sendNameTagAll();
 			
 			this.resetScores();
 
@@ -398,9 +402,7 @@ public abstract class Game {
 	 * @return
 	 */
 	public boolean removePlayer(Participant player) {
-		if (this.mode == MineCombat.MODE_ONGOING) {
-			this.teams.get(player.getTeam()).remove(player);
-		}
+		this.teams.get(player.getTeam()).remove(player);
 		
 		player.getArmed().forEach(weapon -> {
 			if(weapon.getStatus() == Weapon.STATUS_WORKING){
