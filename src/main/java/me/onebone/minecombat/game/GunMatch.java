@@ -2,6 +2,7 @@ package me.onebone.minecombat.game;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,8 +14,10 @@ import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
 import cn.nukkit.event.entity.EntityDamageByEntityEvent;
 import cn.nukkit.event.player.PlayerDeathEvent;
+import cn.nukkit.event.player.PlayerRespawnEvent;
 import cn.nukkit.item.Item;
 import cn.nukkit.level.Position;
+import cn.nukkit.scheduler.PluginTask;
 import cn.nukkit.utils.TextFormat;
 import me.onebone.minecombat.MineCombat;
 import me.onebone.minecombat.Participant;
@@ -25,6 +28,7 @@ import me.onebone.minecombat.weapon.Weapon;
 public class GunMatch extends Game implements Listener{
 	private Map<String, List<Weapon>> weapons = new HashMap<>();
 	private Map<String, Integer> prevTeam = new HashMap<>();
+	private List<Player> immortal = new LinkedList<>();
 	
 	public GunMatch(MineCombat plugin, String name, Position[] position, Position[] spawns){
 		super(plugin, name, position, spawns);
@@ -49,6 +53,27 @@ public class GunMatch extends Game implements Listener{
 		
 		event.setCancelled();
 		event.getItem().kill();
+	}
+	
+	@Override
+	public void respawnParticipant(PlayerRespawnEvent event, Participant participant){
+		super.respawnParticipant(event, participant);
+		
+		this.immortal.add(participant.getPlayer());
+		
+		this.plugin.getServer().getScheduler().scheduleDelayedTask(new PluginTask<MineCombat>(plugin){
+			@Override
+			public void onRun(int currentTick){
+				GunMatch.this.immortal.remove(participant.getPlayer());
+			}
+		}, 20 * 10);
+	}
+	
+	@EventHandler
+	public void onEntityDamage(EntityDamageEvent event){
+		if(this.immortal.contains(event.getEntity())){
+			event.setCancelled();
+		}
 	}
 	
 	@Override
