@@ -383,23 +383,15 @@ public class MineCombat extends PluginBase implements Listener{
 				Player player = event.getPlayer();
 				
 				Participant participant = this.getParticipant(player);
-				if(participant != null){
-					for(Player p : this.getServer().getOnlinePlayers().values()){
-						if(p.getId() == pk.eid){
-							Participant of = this.getParticipant(p);
-							
-							if(of != null){
-								if(participant.getJoinedGame() == of.getJoinedGame()){
-									String tag = participant.getJoinedGame().onSetNameTag(participant, of);
-
-									Map<Integer, EntityData> map = pk.metadata.getMap();
-									pk.metadata = new EntityMetadata();
-									map.forEach((k, v) -> pk.metadata.put(v));
-									
-									pk.metadata.put(
-										new StringEntityData(Entity.DATA_NAMETAG, tag)
-									);
-								}
+				if(participant != null && participant.getJoinedGame() != null){
+					for(Participant of : participant.getJoinedGame().getParticipants()){
+						if(of.getPlayer().getId() == pk.eid){
+							if(participant.getJoinedGame() == of.getJoinedGame()){
+								String tag = participant.getJoinedGame().onSetNameTag(participant, of);
+								
+								pk.metadata.put(
+									new StringEntityData(Entity.DATA_NAMETAG, tag)
+								);
 							}
 							
 							break;
