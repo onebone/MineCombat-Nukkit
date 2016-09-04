@@ -188,6 +188,7 @@ public abstract class Game {
 				event.setRespawnPosition(this.spawns[team]);
 			}
 			player.getPlayer().setSpawn(this.spawns[team]);
+			player.getPlayer().teleport(this.spawns[team]);
 		}
 	}
 
