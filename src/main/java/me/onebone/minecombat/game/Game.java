@@ -225,7 +225,9 @@ public abstract class Game {
 		int[] teams = new int[this.getTeamCount()];
 
 		for (int i = 0; i < this.players.size(); i++) {
-			teams[this.players.get(i).getTeam()]++;
+			if(player != this.players.get(i)){
+				teams[this.players.get(i).getTeam()]++;
+			}
 		}
 
 		int min = teams[0], team = 0;

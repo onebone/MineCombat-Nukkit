@@ -152,7 +152,6 @@ public class GunMatch extends Game implements Listener{
 		}
 		
 		if(super.addPlayer(player)){
-
 			weapons.remove(username);
 			
 			this.giveItem(player);

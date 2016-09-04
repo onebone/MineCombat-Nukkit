@@ -15,6 +15,8 @@ import com.google.gson.reflect.TypeToken;
 
 import cn.nukkit.Player;
 import cn.nukkit.entity.Entity;
+import cn.nukkit.entity.data.EntityData;
+import cn.nukkit.entity.data.EntityMetadata;
 import cn.nukkit.entity.data.StringEntityData;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
@@ -389,6 +391,10 @@ public class MineCombat extends PluginBase implements Listener{
 							if(of != null){
 								if(participant.getJoinedGame() == of.getJoinedGame()){
 									String tag = participant.getJoinedGame().onSetNameTag(participant, of);
+
+									Map<Integer, EntityData> map = pk.metadata.getMap();
+									pk.metadata = new EntityMetadata();
+									map.forEach((k, v) -> pk.metadata.put(v));
 									
 									pk.metadata.put(
 										new StringEntityData(Entity.DATA_NAMETAG, tag)
