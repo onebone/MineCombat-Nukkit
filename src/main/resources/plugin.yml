@@ -1,0 +1,5 @@
+name: MineCombat
+version: "1.0"
+author: onebone
+main: me.onebone.minecombat.MineCombat
+api: ["1.0.0"]
