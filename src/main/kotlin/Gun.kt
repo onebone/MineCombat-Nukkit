@@ -15,18 +15,22 @@ abstract class Gun (
 		val a = this.player.position.add(0.0, player.eyeHeight.toDouble(), 0.0)
 
 		for(target in player.level.players.values){
-			if(target == this.player) continue
+			if(target == player) continue
 
+			val n = target.directionVector
 			val b = target.position
-			val t = (u.x*(b.x-a.x)+u.y*(b.y-a.y)+u.z*(b.z-a.z)) /
-						(u.x*u.x + u.y*u.y + u.z*u.z)
+			val d = -n.x*b.x -n.y*b.y -n.z*b.z
 
-			val dist = Math.sqrt(
-						Math.pow(u.x*t+a.x-b.x, 2.0)
-						+ Math.pow(u.y*t+a.y-b.y, 2.0)
-						+ Math.pow(u.z*t+a.z-b.z, 2.0))
+			val t = (-n.x*a.x - n.y*a.y - n.z*a.z - d) /
+					(n.x*u.x + n.y*u.y + n.z*u.z)
 
-			if(dist < 0.5){
+			val hitX = u.x*t + a.x
+			val hitY = u.y*t + a.y
+			val hitZ = u.z*t + a.z
+
+			if(target.x - target.width/2.0 <= hitX && hitX <= target.x + target.width/2.0
+			&& target.z - target.length/2.0 <= hitZ && hitZ <= target.z + target.length/2.0
+			&& target.y <= hitY && hitY <= target.y + target.height){ // FIXME
 				this.onHit(target)
 			}
 		}
