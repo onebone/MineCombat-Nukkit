@@ -4,7 +4,7 @@ import cn.nukkit.level.Position
 
 data class GameConfig (
 		val prepareTime: Int,
-		val gameTime: Int
-		//val redSpawn: Position,
-		//val blueSpawn: Position
+		val gameTime: Int,
+		val redSpawn: Position,
+		val blueSpawn: Position
 )
