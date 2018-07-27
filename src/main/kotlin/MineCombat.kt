@@ -18,7 +18,7 @@ class MineCombat: PluginBase(), Listener {
 		val gson = GsonBuilder()
 				.registerTypeAdapter(PositionDeserializer::class.java, PositionDeserializer(this.server))
 				.create()
-		f.walk().maxDepth(1).filter { it.extension == "json" }.forEach {
+		f.walk().maxDepth(1).filter { it.isFile && it.extension == "json" }.forEach {
 			val config = gson.fromJson(it.reader(), GameConfig::class.java) // FIXME
 
 			//println(config.blueSpawn.toString())
