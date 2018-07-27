@@ -18,6 +18,7 @@ abstract class Gun (
 			if(target == player) continue
 
 			val n = target.directionVector
+			n.y = 0.0
 			val b = target.position
 			val d = -n.x*b.x -n.y*b.y -n.z*b.z
 
@@ -30,7 +31,7 @@ abstract class Gun (
 
 			if(target.x - target.width/2.0 <= hitX && hitX <= target.x + target.width/2.0
 			&& target.z - target.length/2.0 <= hitZ && hitZ <= target.z + target.length/2.0
-			&& target.y <= hitY && hitY <= target.y + target.height){ // FIXME
+			&& target.y <= hitY && hitY <= target.y + target.height){
 				this.onHit(target)
 			}
 		}
