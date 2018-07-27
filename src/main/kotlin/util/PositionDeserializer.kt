@@ -10,10 +10,10 @@ import java.lang.reflect.Type
 class PositionDeserializer(private val server: Server): JsonDeserializer<Position> {
 	override fun deserialize(json: JsonElement, type: Type, ctx: JsonDeserializationContext): Position? {
 		val arr = json.asJsonArray
-		val x = arr.get(0).asDouble
-		val y = arr.get(1).asDouble
-		val z = arr.get(2).asDouble
-		val levelName = arr.get(3).asString
+		val x = arr[0].asDouble
+		val y = arr[1].asDouble
+		val z = arr[2].asDouble
+		val levelName = arr[3].asString
 
 		val level = server.getLevelByName(levelName)
 
