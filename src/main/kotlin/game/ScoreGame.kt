@@ -13,6 +13,7 @@ class ScoreGame(plugin: MineCombat): SandGlassGame(
 	}
 
 	override fun onReady() {
+
 		// TODO
 	}
 
