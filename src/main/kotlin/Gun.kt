@@ -17,8 +17,7 @@ abstract class Gun (
 		for(target in player.level.players.values){
 			if(target == player) continue
 
-			val n = target.directionVector
-			n.y = 0.0
+			val n = target.directionVector.apply { y = 0.0 }
 			val b = target.position
 			val d = -n.x*b.x -n.y*b.y -n.z*b.z
 
