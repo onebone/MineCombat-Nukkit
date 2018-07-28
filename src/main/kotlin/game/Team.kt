@@ -15,4 +15,8 @@ class Team {
 	fun removePlayer(player: Player) {
 		players -= player
 	}
+
+	fun clearPlayers() {
+		players = setOf()
+	}
 }

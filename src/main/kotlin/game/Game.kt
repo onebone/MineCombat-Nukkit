@@ -2,6 +2,8 @@ package me.onebone.minecombat.game
 
 import cn.nukkit.Player
 import me.onebone.minecombat.MineCombat
+import java.util.LinkedList
+import java.util.Random
 
 const val GAME_STATUS_READY = 0
 const val GAME_STATUS_ONGOING = 1
@@ -14,6 +16,15 @@ abstract class Game(val plugin: MineCombat) {
 	private val teams: Array<Team> = arrayOf()
 	val teamCount: Int
 		get() = teams.size
+	val playerCount: Int
+		get() {
+			var count = 0
+			for(team in teams){
+				count += team.players.size
+			}
+
+			return count
+		}
 
 	/**
 	 * Returns if player is in the game
@@ -53,6 +64,27 @@ abstract class Game(val plugin: MineCombat) {
 	open fun clearTeamScores() {
 		for(team in teams){
 			team.score = 0
+		}
+	}
+
+	/**
+	 * Shuffles teammates
+	 */
+	open fun shuffleTeam() {
+		val players = LinkedList<Player>()
+
+		val random = Random()
+		for(team in this.teams) {
+			for(player in team.players){
+				players.add(random.nextInt(players.size), player)
+			}
+
+			team.clearPlayers()
+		}
+
+		var i = 0
+		for(player in players) {
+			this.teams[i % this.teamCount].addPlayer(player)
 		}
 	}
 
