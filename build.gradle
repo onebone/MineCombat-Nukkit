@@ -17,6 +17,14 @@ dependencies {
     compile 'cn.nukkit:nukkit:1.0-SNAPSHOT'
 }
 
+apply plugin: 'kotlin'
+
+kotlin {
+    experimental {
+        coroutines 'enable'
+    }
+}
+
 sourceSets {
     main.kotlin.srcDirs += "src/main/kotlin"
     main.resources.srcDirs += "src/main/resources"

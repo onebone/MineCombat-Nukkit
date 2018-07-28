@@ -3,8 +3,9 @@ package me.onebone.minecombat.game
 import cn.nukkit.event.HandlerList
 import cn.nukkit.event.Listener
 import me.onebone.minecombat.MineCombat
+import me.onebone.minecombat.util.GameConfig
 
-class ScoreGame(plugin: MineCombat): SandGlassGame(
+class ScoreGame(plugin: MineCombat, private val config: GameConfig): SandGlassGame(
 		plugin,
 		20 * 60,
 		20 * 60 * 5), Listener {
@@ -13,8 +14,9 @@ class ScoreGame(plugin: MineCombat): SandGlassGame(
 	}
 
 	override fun onReady() {
-
-		// TODO
+		players.forEach {
+			
+		}
 	}
 
 	override fun onStart() {

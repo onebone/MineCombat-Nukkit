@@ -3,3 +3,21 @@ version: "1.0"
 author: onebone
 main: me.onebone.minecombat.MineCombat
 api: ["1.0.0"]
+
+commands:
+  mc:
+    usage: /mc <start|join|stop>
+    description: MineCombat master command
+    permission: minecombat.command;minecombat.command.start;minecombat.command.join;minecombat.command.stop
+
+permissions:
+  minecombat:
+    children:
+        minecombat.command:
+          children:
+            minecombat.command.start:
+              default: op
+            minecombat.command.join:
+              default: true
+            minecombat.command.stop:
+              default: op

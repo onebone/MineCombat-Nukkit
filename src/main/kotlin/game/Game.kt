@@ -4,18 +4,23 @@ import cn.nukkit.Player
 import me.onebone.minecombat.MineCombat
 import java.util.LinkedList
 import java.util.Random
+import kotlin.coroutines.experimental.buildIterator
 
 const val GAME_STATUS_READY = 0
 const val GAME_STATUS_ONGOING = 1
 
-abstract class Game(val plugin: MineCombat) {
+abstract class Game(val plugin: MineCombat, val counter: Int = -1) {
 	protected var status: Int = GAME_STATUS_READY
 		set(v){
 			v % 1
 		}
+	val isOngoing: Boolean
+		get() = status == GAME_STATUS_ONGOING
+
 	private val teams: Array<Team> = arrayOf()
 	val teamCount: Int
 		get() = teams.size
+
 	val playerCount: Int
 		get() {
 			var count = 0
@@ -25,6 +30,14 @@ abstract class Game(val plugin: MineCombat) {
 
 			return count
 		}
+
+	val players = buildIterator {
+		for(team in teams) {
+			for(player in team.players) {
+				yield(player)
+			}
+		}
+	}
 
 	/**
 	 * Returns if player is in the game
@@ -82,8 +95,7 @@ abstract class Game(val plugin: MineCombat) {
 			team.clearPlayers()
 		}
 
-		var i = 0
-		for(player in players) {
+		for((i, player) in players.withIndex()) {
 			this.teams[i % this.teamCount].addPlayer(player)
 		}
 	}
