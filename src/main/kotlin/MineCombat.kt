@@ -1,5 +1,6 @@
 package me.onebone.minecombat
 
+import cn.nukkit.Player
 import cn.nukkit.command.Command
 import cn.nukkit.command.CommandSender
 import cn.nukkit.event.EventHandler
@@ -17,7 +18,6 @@ import me.onebone.minecombat.util.GameConfig
 import me.onebone.minecombat.util.PositionDeserializer
 import java.io.File
 import java.util.UUID
-import kotlin.text.StringBuilder
 
 class MineCombat: PluginBase(), Listener {
 	private var games: Map<String, Game> = mapOf()
@@ -28,6 +28,16 @@ class MineCombat: PluginBase(), Listener {
 
 	fun removeGame(name: String) {
 		games -= name
+	}
+
+	fun findPlayer(player: Player): Game? {
+		for(game in this.games.values) {
+			game.players.forEach {
+				if(it == player) return game
+			}
+		}
+
+		return null
 	}
 
 	override fun onEnable(){
@@ -69,7 +79,16 @@ class MineCombat: PluginBase(), Listener {
 
 	override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
 		if(args[0] == "join") {
-			
+			if(sender !is Player) {
+				sender.sendMessage("" + T.RED + "Please run this command in game.")
+				return true
+			}
+
+			if(findPlayer(sender) == null) {
+				// TODO
+			}else{
+				sender.sendMessage("You already have game you've joined.")
+			}
 		}else if(args[0] == "list") {
 			sender.sendMessage("Showing list of games:")
 			for((id, game) in this.games) {

@@ -14,7 +14,7 @@ abstract class Gun (
 		val u = this.player.directionVector
 		val a = this.player.position.add(0.0, player.eyeHeight.toDouble(), 0.0)
 
-		for(target in player.level.players.values){
+		for(target in player.level.players.values) {
 			if(target == player) continue
 
 			val n = target.directionVector.apply { y = 0.0 }
