@@ -5,8 +5,13 @@ import cn.nukkit.event.Listener
 import me.onebone.minecombat.MineCombat
 import me.onebone.minecombat.util.GameConfig
 
-class ScoreGame(plugin: MineCombat, private val config: GameConfig): SandGlassGame(
+class ScoreGame(
+		plugin: MineCombat,
+		name: String,
+		private val config: GameConfig
+): SandGlassGame(
 		plugin,
+		name,
 		20 * 60,
 		20 * 60 * 5), Listener {
 	init {

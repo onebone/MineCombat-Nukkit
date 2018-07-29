@@ -9,7 +9,11 @@ import kotlin.coroutines.experimental.buildIterator
 const val GAME_STATUS_READY = 0
 const val GAME_STATUS_ONGOING = 1
 
-abstract class Game(val plugin: MineCombat, val counter: Int = -1) {
+abstract class Game(
+		val plugin: MineCombat,
+		val name: String,
+		val counter: Int = -1
+) {
 	protected var status: Int = GAME_STATUS_READY
 		set(v){
 			v % 1
