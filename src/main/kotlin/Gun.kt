@@ -1,7 +1,7 @@
 package me.onebone.minecombat
 
 import cn.nukkit.Player
-import cn.nukkit.event.entity.EntityDamageEvent
+import me.onebone.minecombat.event.EntityDamageByGunEvent
 
 abstract class Gun (
 		private val player: Player
@@ -30,13 +30,21 @@ abstract class Gun (
 
 			if(target.x - target.width/2.0 <= hitX && hitX <= target.x + target.width/2.0
 			&& target.z - target.length/2.0 <= hitZ && hitZ <= target.z + target.length/2.0
-			&& target.y <= hitY && hitY <= target.y + target.height){
-				this.onHit(target)
+			&& target.y <= hitY && hitY <= target.y + target.height){ // FIXME: Seems not very accurate
+				if(target.y  - target.height + 2*target.eyeHeight <= hitY) {
+					this.onCriticalHit(target)
+				}else {
+					this.onHit(target)
+				}
 			}
 		}
 	}
 
 	open fun onHit(p: Player) {
-		p.attack(EntityDamageEvent(p, EntityDamageEvent.DamageCause.CUSTOM, 5.0F))
+		p.attack(EntityDamageByGunEvent(player, p, 5F, false))
+	}
+
+	open fun onCriticalHit(p: Player) {
+		p.attack(EntityDamageByGunEvent(player, p, 10F, true))
 	}
 }
