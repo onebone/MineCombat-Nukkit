@@ -12,19 +12,23 @@ class ScoreGame(
 ): SandGlassGame(
 		plugin,
 		name,
-		20 * 60,
-		20 * 60 * 5), Listener {
+		config.prepareTime,
+		config.gameTime), Listener {
 	init {
 		plugin.server.pluginManager.registerEvents(this, plugin)
 	}
 
 	override fun onReady() {
+		super.onReady()
+
 		players.forEach {
 			
 		}
 	}
 
 	override fun onStart() {
+		super.onStart()
+
 		this.clearTeamScores()
 	}
 

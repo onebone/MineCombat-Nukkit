@@ -63,9 +63,8 @@ class MineCombat: PluginBase(), Listener {
 
 		this.server.scheduler.scheduleRepeatingTask(TickTask(this) {
 			for(game in games.values) {
-				if(game.isOngoing) {
-					if(game.canStop()) game.stop()
-				}else if(game.canStart()) game.start()
+				if(game.isOngoing) game.stop()
+				else game.start()
 			}
 		}, 1)
 
@@ -92,7 +91,14 @@ class MineCombat: PluginBase(), Listener {
 		}else if(args[0] == "list") {
 			sender.sendMessage("Showing list of games:")
 			for((id, game) in this.games) {
-				sender.sendMessage(("[" + T.GRAY + "%s" + T.WHITE + "]: " + T.GREEN + "%s").format(id, game.name))
+				sender.sendMessage((
+						"[" + T.GRAY + "%s" + T.WHITE + "]: "
+						+ "%s "
+						+ T.WHITE + "%s" + T.WHITE
+				).format(
+						id,
+						game.statusMessage,
+						game.name))
 			}
 		}
 		return true

@@ -1,6 +1,7 @@
 package me.onebone.minecombat.game
 
 import cn.nukkit.Player
+import cn.nukkit.utils.TextFormat as T
 import me.onebone.minecombat.MineCombat
 import java.util.LinkedList
 import java.util.Random
@@ -16,10 +17,17 @@ abstract class Game(
 ) {
 	protected var status: Int = GAME_STATUS_READY
 		set(v){
-			v % 1
+			field = v % 2
 		}
 	val isOngoing: Boolean
 		get() = status == GAME_STATUS_ONGOING
+
+	open val statusMessage: String
+		get() =
+			if(this.isOngoing)
+				"" + T.GREEN + "ONGOING"
+			else
+				"" + T.YELLOW + "READY"
 
 	private val teams: Array<Team> = arrayOf()
 	val teamCount: Int
