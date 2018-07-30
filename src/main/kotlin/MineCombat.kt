@@ -5,16 +5,21 @@ import cn.nukkit.command.Command
 import cn.nukkit.command.CommandSender
 import cn.nukkit.event.EventHandler
 import cn.nukkit.event.Listener
+import cn.nukkit.event.entity.EntityDamageEvent
+import cn.nukkit.event.player.PlayerDeathEvent
 import cn.nukkit.event.player.PlayerInteractEvent
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.level.Position
 import cn.nukkit.utils.TextFormat as T
 import com.google.gson.GsonBuilder
+import me.onebone.minecombat.event.EntityDamageByGunEvent
 import me.onebone.minecombat.game.Game
 import me.onebone.minecombat.game.ScoreGame
 import me.onebone.minecombat.gun.Pistol
 import me.onebone.minecombat.task.TickTask
+import me.onebone.minecombat.util.Config
 import me.onebone.minecombat.util.GameConfig
+import me.onebone.minecombat.util.KillLog
 import me.onebone.minecombat.util.PositionDeserializer
 import java.io.File
 import java.util.UUID
@@ -32,7 +37,7 @@ class MineCombat: PluginBase(), Listener {
 
 	fun findPlayer(player: Player): Game? {
 		for(game in this.games.values) {
-			game.players.forEach {
+			game.iteratePlayers().forEach {
 				if(it == player) return game
 			}
 		}
@@ -42,6 +47,11 @@ class MineCombat: PluginBase(), Listener {
 
 	override fun onEnable(){
 		games = mapOf()
+
+		this.saveDefaultConfig()
+
+		Config.maxKillLogLength = this.config.getInt("maxKillLogLength", 4)
+		Config.killLogTick = this.config.getInt("killLogTick", 40)
 
 		val f = File(this.dataFolder, "games")
 		if(!f.exists()) f.mkdirs()
@@ -63,6 +73,8 @@ class MineCombat: PluginBase(), Listener {
 
 		this.server.scheduler.scheduleRepeatingTask(TickTask(this) {
 			for(game in games.values) {
+				game.tick(it)
+
 				if(game.isOngoing) game.stop()
 				else game.start()
 			}
@@ -72,8 +84,25 @@ class MineCombat: PluginBase(), Listener {
 	}
 
 	@EventHandler
-	fun onPlayerTouch(event: PlayerInteractEvent){
+	fun onPlayerTouch(event: PlayerInteractEvent) {
 		Pistol(event.player).shoot()
+	}
+
+	@EventHandler
+	fun onPlayerDeath(event: PlayerDeathEvent) {
+		val cause = event.entity.lastDamageCause
+		if(cause is EntityDamageByGunEvent) {
+			val damager = cause.damager
+			val victim = event.entity
+
+			if(damager is Player && victim is Player) {
+				findPlayer(damager)?.let {
+					if (it.isGamer(victim)) {
+						it.addKillLog(KillLog(damager, victim, this.server.tick, cause.symbol))
+					}
+				}
+			}
+		}
 	}
 
 	override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
@@ -84,7 +113,19 @@ class MineCombat: PluginBase(), Listener {
 			}
 
 			if(findPlayer(sender) == null) {
-				// TODO
+				if(args.size != 2) {
+					sender.sendMessage("Usage: /mc join <id>")
+				}else{
+					if(args[1] in this.games) {
+						val game = this.games[args[1]]!!
+						val team = game.addPlayer(sender)
+						if(team == -1) {
+							sender.sendMessage("Team does not exist. Please call administrator of the game.")
+						}else {
+							sender.sendMessage("You've joined game. You are team #%d".format(team))
+						}
+					}
+				}
 			}else{
 				sender.sendMessage("You already have game you've joined.")
 			}

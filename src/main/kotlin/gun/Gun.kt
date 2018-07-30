@@ -1,6 +1,7 @@
-package me.onebone.minecombat
+package me.onebone.minecombat.gun
 
 import cn.nukkit.Player
+import cn.nukkit.utils.TextFormat as T
 import me.onebone.minecombat.event.EntityDamageByGunEvent
 
 abstract class Gun (
@@ -45,6 +46,6 @@ abstract class Gun (
 	}
 
 	open fun onCriticalHit(p: Player) {
-		p.attack(EntityDamageByGunEvent(player, p, 10F, true))
+		p.attack(EntityDamageByGunEvent(player, p, 10F, true, "" + T.RED + "->" + T.WHITE))
 	}
 }

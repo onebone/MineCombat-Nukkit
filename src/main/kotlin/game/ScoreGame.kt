@@ -21,7 +21,7 @@ class ScoreGame(
 	override fun onReady() {
 		super.onReady()
 
-		players.forEach {
+		iteratePlayers().forEach {
 			
 		}
 	}

@@ -3,6 +3,7 @@ package me.onebone.minecombat.game
 import cn.nukkit.Player
 import cn.nukkit.utils.TextFormat as T
 import me.onebone.minecombat.MineCombat
+import me.onebone.minecombat.util.KillLog
 import java.util.LinkedList
 import java.util.Random
 import kotlin.coroutines.experimental.buildIterator
@@ -13,7 +14,8 @@ const val GAME_STATUS_ONGOING = 1
 abstract class Game(
 		val plugin: MineCombat,
 		val name: String,
-		val counter: Int = -1
+		val counter: Int = -1,
+		teamCount: Int = 2
 ) {
 	protected var status: Int = GAME_STATUS_READY
 		set(v){
@@ -29,9 +31,14 @@ abstract class Game(
 			else
 				"" + T.YELLOW + "READY"
 
-	private val teams: Array<Team> = arrayOf()
+	private var teams: Array<Team> = arrayOf()
 	val teamCount: Int
 		get() = teams.size
+
+	private var lastAddedTeam: Int = 0
+		set(v) {
+			field = v % teams.size + 1
+		}
 
 	val playerCount: Int
 		get() {
@@ -43,11 +50,21 @@ abstract class Game(
 			return count
 		}
 
-	val players = buildIterator {
-		for(team in teams) {
-			for(player in team.players) {
-				yield(player)
+	var killLog: Array<KillLog> = arrayOf()
+
+	fun iteratePlayers(): Iterator<Player> {
+		return buildIterator {
+			for (team in teams) {
+				for (player in team.players) {
+					yield(player)
+				}
 			}
+		}
+	}
+
+	init {
+		for(i in 0..teamCount) {
+			this.teams += Team()
 		}
 	}
 
@@ -60,6 +77,34 @@ abstract class Game(
 		}
 
 		return false
+	}
+
+	fun addPlayer(player: Player): Int {
+		if(teamCount == 0) return -1
+
+		teams[++lastAddedTeam].addPlayer(player)
+		return lastAddedTeam
+	}
+
+	fun isEnemy(p1: Player, p2: Player): Boolean {
+		var found = false
+
+		for(team in teams) {
+			for(player in team.players) {
+				if(player == p1 || player == p2) {
+					if(found) return false
+					found = true
+				}
+			}
+			found = false
+		}
+
+		return true
+	}
+
+	fun addKillLog(log: KillLog) {
+		if(isGamer(log.damager) && isGamer(log.victim))
+			killLog += log
 	}
 
 	fun start(force: Boolean = false): Boolean {
@@ -109,6 +154,16 @@ abstract class Game(
 
 		for((i, player) in players.withIndex()) {
 			this.teams[i % this.teamCount].addPlayer(player)
+		}
+	}
+
+	open fun tick(currentTick: Int) {
+		killLog = killLog.filter { !it.isDeletable(currentTick) }.toTypedArray().also {
+			it.forEach {log ->
+				iteratePlayers().forEach {player ->
+					player.sendTip(log.getMessage(isEnemy(player, log.damager)))
+				}
+			}
 		}
 	}
 
