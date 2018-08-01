@@ -8,11 +8,14 @@ import cn.nukkit.event.Listener
 import cn.nukkit.event.entity.EntityDamageEvent
 import cn.nukkit.event.player.PlayerDeathEvent
 import cn.nukkit.event.player.PlayerInteractEvent
+import cn.nukkit.event.player.PlayerJoinEvent
+import cn.nukkit.event.player.PlayerQuitEvent
 import cn.nukkit.plugin.PluginBase
 import cn.nukkit.level.Position
 import cn.nukkit.utils.TextFormat as T
 import com.google.gson.GsonBuilder
 import me.onebone.minecombat.event.EntityDamageByGunEvent
+import me.onebone.minecombat.exception.MultipleDefaultGameException
 import me.onebone.minecombat.game.Game
 import me.onebone.minecombat.game.ScoreGame
 import me.onebone.minecombat.gun.Pistol
@@ -64,7 +67,11 @@ class MineCombat: PluginBase(), Listener {
 		f.walk().maxDepth(1).filter { it.isFile && it.extension == "json" }.forEach {
 			val config = gson.fromJson(it.reader(), GameConfig::class.java)
 
-			this.addGame(this.generateId(), ScoreGame(this, it.nameWithoutExtension, config))
+			try {
+				this.addGame(it.nameWithoutExtension, ScoreGame(this, config))
+			}catch(e: MultipleDefaultGameException) {
+				this.logger.error("Multiple game is going to be set to default. This is not allowed.")
+			}
 
 			count++
 		}
@@ -81,6 +88,16 @@ class MineCombat: PluginBase(), Listener {
 		}, 1)
 
 		this.server.pluginManager.registerEvents(this, this)
+	}
+
+	@EventHandler
+	fun onPlayerJoin(event: PlayerJoinEvent) {
+		Game.defaultGame?.addPlayer(event.player)
+	}
+
+	@EventHandler
+	fun onPlayerQuit(event: PlayerQuitEvent) {
+		findPlayer(event.player)?.removePlayer(event.player)
 	}
 
 	@EventHandler
@@ -140,6 +157,18 @@ class MineCombat: PluginBase(), Listener {
 						id,
 						game.statusMessage,
 						game.name))
+			}
+		}else if(args[0] == "info") {
+			if(sender is Player) {
+				val game = findPlayer(sender)
+				if(game == null) {
+					sender.sendMessage("You have not joined to any game.")
+				}else{
+					sender.sendMessage("Game info:")
+					sender.sendMessage(game.statusMessage)
+				}
+			}else{
+				sender.sendMessage("Please run this command in-game.")
 			}
 		}
 		return true

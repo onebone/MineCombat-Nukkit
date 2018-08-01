@@ -3,6 +3,7 @@ package me.onebone.minecombat.game
 import cn.nukkit.Player
 import cn.nukkit.utils.TextFormat as T
 import me.onebone.minecombat.MineCombat
+import me.onebone.minecombat.exception.MultipleDefaultGameException
 import me.onebone.minecombat.util.KillLog
 import java.util.LinkedList
 import java.util.Random
@@ -13,11 +14,17 @@ const val GAME_STATUS_ONGOING = 1
 
 abstract class Game(
 		val plugin: MineCombat,
-		val name: String,
+		val default: Boolean = false,
 		val counter: Int = -1,
 		teamCount: Int = 2
 ) {
-	protected var status: Int = GAME_STATUS_READY
+	companion object {
+		val defaultGame: Game? = null
+	}
+
+	abstract val name: String
+
+	private var status: Int = GAME_STATUS_READY
 		set(v){
 			field = v % 2
 		}
@@ -63,6 +70,8 @@ abstract class Game(
 	}
 
 	init {
+		if(Game.defaultGame != null) throw MultipleDefaultGameException()
+
 		for(i in 0..teamCount) {
 			this.teams += Team()
 		}
@@ -84,6 +93,16 @@ abstract class Game(
 
 		teams[++lastAddedTeam].addPlayer(player)
 		return lastAddedTeam
+	}
+
+	fun removePlayer(player: Player): Boolean {
+		for(team in teams) {
+			if(player in team.players) {
+				team.players -= player
+				return true
+			}
+		}
+		return false
 	}
 
 	fun isEnemy(p1: Player, p2: Player): Boolean {

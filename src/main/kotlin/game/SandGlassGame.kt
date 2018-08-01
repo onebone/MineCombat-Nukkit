@@ -7,10 +7,10 @@ import me.onebone.minecombat.task.TickTask
 
 abstract class SandGlassGame (
 		plugin: MineCombat,
-		name: String,
 		val readyTick: Int,
-		val gameTick: Int
-): Game(plugin, name) {
+		val gameTick: Int,
+		default: Boolean = false
+): Game(plugin, default) {
 	private var time: Int = 0
 	private val taskId: Int
 

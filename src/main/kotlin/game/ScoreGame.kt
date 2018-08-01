@@ -7,13 +7,15 @@ import me.onebone.minecombat.util.GameConfig
 
 class ScoreGame(
 		plugin: MineCombat,
-		name: String,
 		private val config: GameConfig
 ): SandGlassGame(
 		plugin,
-		name,
 		config.prepareTime,
-		config.gameTime), Listener {
+		config.gameTime,
+		config.default), Listener {
+	override val name: String
+		get() = config.name
+
 	init {
 		plugin.server.pluginManager.registerEvents(this, plugin)
 	}
