@@ -5,7 +5,6 @@ import cn.nukkit.command.Command
 import cn.nukkit.command.CommandSender
 import cn.nukkit.event.EventHandler
 import cn.nukkit.event.Listener
-import cn.nukkit.event.entity.EntityDamageEvent
 import cn.nukkit.event.player.PlayerDeathEvent
 import cn.nukkit.event.player.PlayerInteractEvent
 import cn.nukkit.event.player.PlayerJoinEvent
